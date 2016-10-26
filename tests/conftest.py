@@ -44,4 +44,7 @@ def pytest_configure():
         PASSWORD_HASHERS=(
             'django.contrib.auth.hashers.MD5PasswordHasher',
         ),
+        REST_FRAMEWORK={
+            'DEFAULT_VERSION': '1',
+        }
     )
