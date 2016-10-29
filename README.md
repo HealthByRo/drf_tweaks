@@ -2,18 +2,100 @@
 
 **Set of extensions for [Django Rest Framework][drf]**
 
-This project is intended to contain a set of improvements/addons for DRF.
+This project is intended to contain a set of improvements/addons for DRF that we've developed during using DRF.
 
-**This is work in progress**
+*This is an early stage. Things may still change.*
 
 # Current extensions
+* [Extended Serializers](#serializers)
 * [Pagination without counts](#pagination)
 * [Versioning extension](#versioning)
 * [Autodocumentation](#autodocumentation) - extension for [Django Rest Swagger][drs]
 
-TODO: Extended Serializer: single pass, custom errors, pool, fields controlled by param, custom required
-
 ---
+
+# Serializers
+There are a few improvements that the standard DRF Serializer could benefit from. Each improvement, how to use it
+& rationale for it is described in the sections below.
+
+### One-step validation
+Standard serializer is validating the data in three steps:
+* field-level validation (required, blank, validators)
+* custom field-level validation (method validate_fieldname(...))
+* custom general validation (method validate(...))
+
+So for example if you have a serializer with 4 required fields: first_name, email, password & confirm_password and you
+pass data without first_name and with wrong confirm_password, you'll get first the error for first_name, and then, after
+you correct it you'll get error for confirm_password, instead of getting both errors at once. This results in bad user
+experience, and that's why we've changed all validation to be run in one step.
+
+Validation of our Serializer runs all three phases, and merges errors from all of them. However if a given field
+generated an error on two different stages, it returns the error only from the former one.
+
+When using our Serializer/ModelSerializer, when writing "validate" method, you need to remember that given field may
+not be in a dictionary, so the validation must be more sophisticated:
+```python
+    def validate(self, data):
+        errors = {}
+        # wrong - password & confirm_password may raise KeyError
+        if data["password"] != data["confirm_password"]:
+            errors["confirm_password"] = [_("This field must match")]
+
+        # correct
+        if data.get("password") != data.get("confirm_password"):
+            errors["confirm_password"] = [_("Passwords")]
+
+        if errors:
+            raise serializer.ValidationError(errors)
+
+        return data
+```
+
+### Making fields required
+Standard ModelSerializer is taking the "required" state from the corresponding Model field. To make not-required model
+field required in serializer, you have to declare it explicitly on serializer, so if the field first_name is not
+required in the model, you need to do:
+```python
+    class MySerializer(serializers.ModelSerializer):
+        first_name = serializers.CharField(..., required=True)
+```
+This is quite annoying when you have to do it often, that's why our ModelSerializer allows you to override this by simple
+specifying the list of fields you want to make required:
+```python
+    from drf_extensions.serializers import ModelSerializer
+
+    class MySerializer(ModelSerializer):
+        required_fields = ["first_name"]
+```
+
+### Custom errors
+Our serializers provide a simple way to override blank & required error messages, by either specifying default error for
+all fields or specifying error for specific field. To each error message "fieldname" is passed as format parameter.
+Example:
+```python
+    from drf_extensions.serializers import ModelSerializer
+
+    class MySerializer(ModelSerializer):
+        required_error = blank_error = "{fieldname} is required"
+        custom_required_errors = custom_blank_errors = {
+            "credit_card_number": "You make me a saaaad Panda."
+        }
+```
+
+### Control over serialized fields
+Our serializers provide control over serialized fields. It may be useful in following cases:
+* You have quite heavy serializer (many fields, foreign keys, db calls, etc.), that you need in one place, but in the
+other place you just need some basic data from it - say just name & id. You could provide separate serializer for such
+case, or even separate endpoint, but it would be easier if the client can have control over which fields get serialized.
+* You have some fields that should be serialized only for some state of the serialized object, and not for other.
+
+Both things can be achieved with our serializer. By default they check if the "fields" were passed in the context or if
+"fields" were passed as a GET parameter (in such case "request" must be present in the context), but you can define
+custom behaviour by overriding the followin method in the Serializer:
+```python
+    def get_fields_for_serialization(self, obj):
+        return {"name", "id"}
+```
 
 # Pagination
 
