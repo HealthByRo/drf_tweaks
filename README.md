@@ -2,7 +2,7 @@
 
 [![build-status-image]][travis]
 [![requires-io]][requires-io]
-<!-- [![coverage-status-image]][codecov] -->
+[![coverage-status-image]][codecov]
 
 **Set of extensions for [Django Rest Framework][drf]**
 
@@ -326,7 +326,8 @@ Custom class should inherit from AutodocBase:
 [drf]: http://www.django-rest-framework.org
 [drf-versioning]: http://www.django-rest-framework.org/api-guide/versioning/
 [drs]: https://github.com/marcgibbons/django-rest-swagger
-<!-- [codecov]: http://codecov.io/github/ArabellaTech/drf_extensions?branch=master -->
+[coverage-status-image]: https://img.shields.io/codecov/c/github/ArabellaTech/drf_extensions/master.svg
+[codecov]: http://codecov.io/github/ArabellaTech/drf_extensions?branch=master
 [build-status-image]: https://secure.travis-ci.org/ArabellaTech/drf_extensions.svg?branch=master
 [travis]: http://travis-ci.org/ArabellaTech/drf_extensions?branch=master
 [requires-io]: https://requires.io/github/ArabellaTech/drf_extensions/requirements.svg?branch=master
