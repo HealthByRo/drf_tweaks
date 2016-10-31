@@ -327,5 +327,6 @@ Custom class should inherit from AutodocBase:
 [drf-versioning]: http://www.django-rest-framework.org/api-guide/versioning/
 [drs]: https://github.com/marcgibbons/django-rest-swagger
 <!-- [codecov]: http://codecov.io/github/ArabellaTech/drf_extensions?branch=master -->
+[build-status-image]: https://secure.travis-ci.org/ArabellaTech/drf_extensions.svg?branch=master
 [travis]: http://travis-ci.org/ArabellaTech/drf_extensions?branch=master
 [requires-io]: https://requires.io/github/ArabellaTech/drf_extensions/requirements.svg?branch=master
