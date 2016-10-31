@@ -110,6 +110,16 @@ cases it is unnecessary to have counts (for example for endless scrolls). The fa
 CursorPaginator, however it is not as easy to use as LimitOffsetPaginator/PageNumberPaginator and does not allow
 sorting.
 
+### Usage
+```python
+    from drf_extensions.pagination import NoCountsLimitOffsetPagination
+    from drf_extensions.pagination import NoCountsPageNumberPagination
+```
+
+Use it as standard pagination - the only difference is that it does not return "count" in the dictionary. Page indicated
+by "next" may be empty. Next page url is present if the current page size is as requested - if it contains less items
+then requested, it means we're on the last page.
+
 ### NoCountsLimitOffsetPagination
 
 A limit/offset based pagination, without performing counts. For example:
