@@ -1,5 +1,8 @@
 # DRF Extensions
 
+[![requires-io]][requires-io]
+<!-- [![coverage-status-image]][codecov] -->
+
 **Set of extensions for [Django Rest Framework][drf]**
 
 This project is intended to contain a set of improvements/addons for DRF that we've developed during using DRF.
@@ -322,3 +325,5 @@ Custom class should inherit from AutodocBase:
 [drf]: http://www.django-rest-framework.org
 [drf-versioning]: http://www.django-rest-framework.org/api-guide/versioning/
 [drs]: https://github.com/marcgibbons/django-rest-swagger
+<!-- [codecov]: http://codecov.io/github/ArabellaTech/drf_extensions?branch=master -->
+[requires-io]: https://requires.io/github/ArabellaTech/drf_extensions/requirements.svg?branch=master
