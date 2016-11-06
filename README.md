@@ -8,8 +8,6 @@
 
 This project is intended to contain a set of improvements/addons for DRF that we've developed during using DRF.
 
-*This is an early stage. Things may still change.*
-
 # Current tweaks
 * [Extended Serializers](#serializers)
 * [Pagination without counts](#pagination)
