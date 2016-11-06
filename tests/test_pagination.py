@@ -6,7 +6,7 @@ from django.test import TestCase
 from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 
-from drf_extensions.pagination import (IncorrectLimitOffsetError,
+from drf_tweaks.pagination import (IncorrectLimitOffsetError,
                                        NotFound,
                                        NoCountsLimitOffsetPagination,
                                        NoCountsPageNumberPagination)

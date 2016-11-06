@@ -38,7 +38,7 @@ def pytest_configure():
             'django.contrib.sites',
             'django.contrib.staticfiles',
             'rest_framework',
-            'drf_extensions',
+            'drf_tweaks',
             'tests',
         ),
         PASSWORD_HASHERS=(

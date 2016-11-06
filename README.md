@@ -1,16 +1,16 @@
-# DRF Extensions
+# DRF Tweaks
 
 [![build-status-image]][travis]
 [![requires-io]][requires-io]
 [![coverage-status-image]][codecov]
 
-**Set of extensions for [Django Rest Framework][drf]**
+**Set of tweaks for [Django Rest Framework][drf]**
 
 This project is intended to contain a set of improvements/addons for DRF that we've developed during using DRF.
 
 *This is an early stage. Things may still change.*
 
-# Current extensions
+# Current tweaks
 * [Extended Serializers](#serializers)
 * [Pagination without counts](#pagination)
 * [Versioning extension](#versioning)
@@ -66,7 +66,7 @@ required in the model, you need to do:
 This is quite annoying when you have to do it often, that's why our ModelSerializer allows you to override this by simple
 specifying the list of fields you want to make required:
 ```python
-    from drf_extensions.serializers import ModelSerializer
+    from drf_tweaks.serializers import ModelSerializer
 
     class MySerializer(ModelSerializer):
         required_fields = ["first_name"]
@@ -77,7 +77,7 @@ Our serializers provide a simple way to override blank & required error messages
 all fields or specifying error for specific field. To each error message "fieldname" is passed as format parameter.
 Example:
 ```python
-    from drf_extensions.serializers import ModelSerializer
+    from drf_tweaks.serializers import ModelSerializer
 
     class MySerializer(ModelSerializer):
         required_error = blank_error = "{fieldname} is required"
@@ -112,8 +112,8 @@ sorting.
 
 ### Usage
 ```python
-    from drf_extensions.pagination import NoCountsLimitOffsetPagination
-    from drf_extensions.pagination import NoCountsPageNumberPagination
+    from drf_tweaks.pagination import NoCountsLimitOffsetPagination
+    from drf_tweaks.pagination import NoCountsPageNumberPagination
 ```
 
 Use it as standard pagination - the only difference is that it does not return "count" in the dictionary. Page indicated
@@ -172,13 +172,13 @@ In order to make deprecation warning work, you need to add DeprecationMiddleware
     # django >= 1.10
     MIDDLEWARE (
         ...
-        "drf_extensions.versioning.DeprecationMiddleware"
+        "drf_tweaks.versioning.DeprecationMiddleware"
     )
 
     # django < 1.10
     MIDDLEWARE_CLASSES (
         ...
-        "drf_extensions.versioning.DeprecationMiddleware"
+        "drf_tweaks.versioning.DeprecationMiddleware"
     )
 ```
 
@@ -336,8 +336,8 @@ Custom class should inherit from AutodocBase:
 [drf]: http://www.django-rest-framework.org
 [drf-versioning]: http://www.django-rest-framework.org/api-guide/versioning/
 [drs]: https://github.com/marcgibbons/django-rest-swagger
-[coverage-status-image]: https://img.shields.io/codecov/c/github/ArabellaTech/drf_extensions/master.svg
-[codecov]: http://codecov.io/github/ArabellaTech/drf_extensions?branch=master
-[build-status-image]: https://secure.travis-ci.org/ArabellaTech/drf_extensions.svg?branch=master
-[travis]: http://travis-ci.org/ArabellaTech/drf_extensions?branch=master
-[requires-io]: https://requires.io/github/ArabellaTech/drf_extensions/requirements.svg?branch=master
+[coverage-status-image]: https://img.shields.io/codecov/c/github/ArabellaTech/drf_tweaks/master.svg
+[codecov]: http://codecov.io/github/ArabellaTech/drf_tweaks?branch=master
+[build-status-image]: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
+[travis]: http://travis-ci.org/ArabellaTech/drf_tweaks?branch=master
+[requires-io]: https://requires.io/github/ArabellaTech/drf_tweaks/requirements.svg?branch=master

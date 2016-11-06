@@ -7,11 +7,11 @@ from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_extensions.autodoc import BaseInfoAutodoc
-from drf_extensions.autodoc import PaginationAutodoc
-from drf_extensions.autodoc import autodoc
-from drf_extensions.pagination import NoCountsLimitOffsetPagination
-from drf_extensions.versioning import ApiVersionMixin
+from drf_tweaks.autodoc import BaseInfoAutodoc
+from drf_tweaks.autodoc import PaginationAutodoc
+from drf_tweaks.autodoc import autodoc
+from drf_tweaks.pagination import NoCountsLimitOffsetPagination
+from drf_tweaks.versioning import ApiVersionMixin
 
 
 # sample serializers

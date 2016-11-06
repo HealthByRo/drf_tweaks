@@ -6,8 +6,8 @@ from rest_framework.request import Request
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 
-from drf_extensions.serializers import ModelSerializer
-from drf_extensions.serializers import Serializer
+from drf_tweaks.serializers import ModelSerializer
+from drf_tweaks.serializers import Serializer
 from tests.models import SampleModel
 
 

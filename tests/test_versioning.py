@@ -11,7 +11,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_extensions.versioning import ApiVersionMixin
+from drf_tweaks.versioning import ApiVersionMixin
 from tests.models import SampleModel
 
 
@@ -99,8 +99,8 @@ urlpatterns = [
 @override_settings(ROOT_URLCONF="tests.test_versioning",
                    API_VERSION_DEPRECATION_OFFSET=1,
                    API_VERSION_OBSOLETE_OFFSET=2,
-                   MIDDLEWARE=settings.MIDDLEWARE + ("drf_extensions.versioning.DeprecationMiddleware", ),
-                   MIDDLEWARE_CLASSES=settings.MIDDLEWARE + ("drf_extensions.versioning.DeprecationMiddleware", ))
+                   MIDDLEWARE=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware", ),
+                   MIDDLEWARE_CLASSES=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware", ))
 class VersioningApiTestCase(APITestCase):
     def setUp(self):
         self.sample1 = SampleModel.objects.create(a="a", b="b")

@@ -44,20 +44,20 @@ def get_package_data(package):
     return {package: filepaths}
 
 
-version = get_version('drf_extensions')
+version = get_version('drf_tweaks')
 
 
 setup(
-    name='drf_extensions',
+    name='drf_tweaks',
     version=version,
-    url='https://github.com/ArabellaTech/drf_extensions',
+    url='https://github.com/ArabellaTech/drf_tweaks',
     license='MIT',
     description='Set of extensions for Django Rest Framework',
     long_description=read_md('README.md'),
     author='Pawel Krzyzaniak',
     author_email='pawelk@arabel.la',
-    packages=get_packages('drf_extensions'),
-    package_data=get_package_data('drf_extensions'),
+    packages=get_packages('drf_tweaks'),
+    package_data=get_package_data('drf_tweaks'),
     install_requires=[],
     zip_safe=False,
     classifiers=[
