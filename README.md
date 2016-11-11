@@ -1,6 +1,7 @@
 # DRF Tweaks
 
 [![build-status-image]][travis]
+[![pypi-version]][pypi]
 [![requires-io]][requires-io]
 [![coverage-status-image]][codecov]
 
@@ -339,3 +340,5 @@ Custom class should inherit from AutodocBase:
 [build-status-image]: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
 [travis]: http://travis-ci.org/ArabellaTech/drf_tweaks?branch=master
 [requires-io]: https://requires.io/github/ArabellaTech/drf_tweaks/requirements.svg?branch=master
+[pypi]: https://pypi.python.org/pypi/drf_tweaks
+[pypi-version]: https://img.shields.io/pypi/v/drf_tweaks.svg
