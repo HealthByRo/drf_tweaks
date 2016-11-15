@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+from django_filters.rest_framework import FilterSet
+from rest_framework import filters
 from rest_framework import serializers
+from rest_framework.generics import ListAPIView
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
@@ -10,13 +13,21 @@ from rest_framework.versioning import AcceptHeaderVersioning
 from drf_tweaks.autodoc import BaseInfoAutodoc
 from drf_tweaks.autodoc import PaginationAutodoc
 from drf_tweaks.autodoc import autodoc
+from drf_tweaks.autofilter import autofilter
 from drf_tweaks.pagination import NoCountsLimitOffsetPagination
 from drf_tweaks.versioning import ApiVersionMixin
+from tests.models import SampleModelForAutofilter
 
 
 # sample serializers
 class SampleVersionedApiSerializerVer1(serializers.Serializer):
     pass
+
+
+class SampleModelForAutofilterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SampleModelForAutofilter
+        fields = ["id", "fk", "non_indexed_fk", "indexed_int", "non_indexed_int", "indexed_char", "non_indexed_char"]
 
 
 # sample APIs
@@ -81,6 +92,43 @@ class SampleVersionedApiT3(SampleVersionedApi):
     pass
 
 
+@autodoc("Test")
+@autofilter()
+class SampleAutofilterApi(ListAPIView):
+    queryset = SampleModelForAutofilter.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SampleModelForAutofilterSerializer
+    filter_backends = (filters.OrderingFilter,)
+    pagination_class = None
+
+
+class SampleFilterClass(FilterSet):
+    class Meta:
+        model = SampleModelForAutofilter
+        fields = []
+
+
+@autodoc("Test")
+@autofilter()
+class SampleAutofilterApiV2(ListAPIView):
+    queryset = SampleModelForAutofilter.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SampleModelForAutofilterSerializer
+    filter_backends = (filters.OrderingFilter,)
+    filter_class = SampleFilterClass
+    pagination_class = None
+
+
+@autodoc("Test")
+class SampleAutofilterApiV3(ListAPIView):
+    queryset = SampleModelForAutofilter.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SampleModelForAutofilterSerializer
+    filter_fields = ("id", "fk")
+    ordering_fields = ("id", "fk")
+    pagination_class = None
+
+
 # expected docstrings
 BASE_INFO_ONLY = "Test"
 BASE_INFO_WITH_DOCSTRING_PUT = """Test
@@ -118,6 +166,28 @@ PAGINATION_GET = """Test
 limit -- optional, limit
 offset -- optional, offset"""
 
+AUTOFILTERED_GET = """Test
+
+<b>Sorting:</b>
+\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
+\tavailable fields: fk, id, indexed_char, indexed_int
+
+<b>Filtering:</b>
+\tfk: exact, __gt, __gte, __lt, __lte, __in
+\tid: exact, __gt, __gte, __lt, __lte, __in
+\tindexed_char: exact, __gt, __gte, __lt, __lte, __in, __icontains
+\tindexed_int: exact, __gt, __gte, __lt, __lte, __in"""
+
+FILTER_SORTING_GET = """Test
+
+<b>Sorting:</b>
+\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
+\tavailable fields: fk, id
+
+<b>Filtering:</b>
+\tfk: exact
+\tid: exact"""
+
 
 class AutodocTestCase(APITestCase):
     def test_base_info_only(self):
@@ -137,3 +207,10 @@ class AutodocTestCase(APITestCase):
 
     def test_autodoc_with_existing_docstring(self):
         self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_ONLY)
+
+    def test_autodoc_with_autofilter(self):
+        self.assertEqual(SampleAutofilterApi.get.__doc__, AUTOFILTERED_GET)
+        self.assertEqual(SampleAutofilterApiV2.get.__doc__, AUTOFILTERED_GET)
+
+    def test_autodoc_for_filter_and_order(self):
+        self.assertEqual(SampleAutofilterApiV3.get.__doc__, FILTER_SORTING_GET)

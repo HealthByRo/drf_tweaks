@@ -354,8 +354,8 @@ If default pagination class is defined, and you don't want it to be added, you c
 ### OrderingAndFiltering
 This one is adding ordering & filtering information, based on OrderingFilter and DjangoFilterBackend for "get" method in swagger in following format:
 ```
-    Ordering:
-        usage: ?ordering=last_name,-date_of_birth
+    Sorting:
+        usage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
         available fields: id, first_name, last_name, date_of_birth
 
     Filtering:

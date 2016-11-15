@@ -76,14 +76,14 @@ class PaginationAutodoc(AutodocBase):
     @classmethod
     def _generate_text(cls, documented_cls, method_name):
         params = []
-        if hasattr(documented_cls, 'pagination_class'):
+        if hasattr(documented_cls, "pagination_class"):
             for item_name in dir(documented_cls.pagination_class):
-                if item_name.endswith('_query_param') and getattr(documented_cls.pagination_class, item_name, None):
+                if item_name.endswith("_query_param") and getattr(documented_cls.pagination_class, item_name, None):
                     params.append("%s -- optional, %s" % (
                         getattr(documented_cls.pagination_class, item_name),
-                        item_name.replace('_query_param', '')
+                        item_name.replace("_query_param", "")
                     ))
-        return '\n'.join(params)
+        return "\n".join(params)
 
 
 class VersioningAutodoc(AutodocBase):
@@ -104,12 +104,46 @@ class VersioningAutodoc(AutodocBase):
     @classmethod
     def _generate_text(cls, documented_cls, method_name):
         text = ""
-        if hasattr(documented_cls, 'get_deprecated_and_obsolete_versions'):
+        if hasattr(documented_cls, "get_deprecated_and_obsolete_versions"):
             deprecated, obsolete = documented_cls.get_deprecated_and_obsolete_versions()
             if deprecated and deprecated > 0:
                 text += "\nVersions lower or equal to %d are <b>deprecated</b>" % deprecated
             if obsolete and obsolete > 0:
                 text += "\n\nVersions lower or equal to %d are <b>obsolete</b>" % obsolete
+        return text
+
+
+class OrderingAndFilteringAutodoc(AutodocBase):
+    """ Adding ordering & filtering informations """
+    applies_to = ("get", )
+
+    @classmethod
+    def _generate_yaml(cls, documented_cls, method_name):
+        return ""
+
+    @classmethod
+    def _generate_text(cls, documented_cls, method_name):
+        text = ""
+        ordering_fields = getattr(documented_cls, "ordering_fields", None)
+        if ordering_fields:
+            text = "<b>Sorting:</b>\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\tavailable fields: "
+            text += ", ".join(sorted(ordering_fields))
+
+        filter_fields = getattr(documented_cls, "filter_fields", None)
+        filter_class = getattr(documented_cls, "filter_class", None)
+        if filter_class:
+            filter_fields = filter_class.Meta.fields
+        if filter_fields:
+            if ordering_fields:
+                text += "\n\n"
+            text += "<b>Filtering:</b>"
+            if isinstance(filter_fields, dict):
+                for key in sorted(filter_fields.keys()):
+                    text += "\n\t%s: %s" % (key, ", ".join(x if x == "exact" else "__" + x for x in filter_fields[key]))
+            else:
+                for field in sorted(filter_fields):
+                    text += "\n\t%s: exact" % field
+
         return text
 
 
@@ -143,10 +177,10 @@ class BaseInfoAutodoc(AutodocBase):
 if hasattr(settings, "AUTODOC_DEFAULT_CLASSESS"):
     DEFAULT_CLASSESS = [import_from_string(x, "") for x in settings.AUTODOC_DEFAULT_CLASSESS]
 else:
-    DEFAULT_CLASSESS = (BaseInfoAutodoc, PaginationAutodoc, VersioningAutodoc)
+    DEFAULT_CLASSESS = (BaseInfoAutodoc, PaginationAutodoc, VersioningAutodoc, OrderingAndFilteringAutodoc)
 
 
-def autodoc(base_doc='', classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
+def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
     def copy_method(cls, method_name, method):
         """ create facade for a method with preservation of original docstring """
         def shadow_method(self, *args, **kwargs):
