@@ -11,6 +11,7 @@ This project is intended to contain a set of improvements/addons for DRF that we
 
 # Current tweaks
 * [Extended Serializers](#serializers)
+* [Auto filtering and ordering](#auto-filtering-and-ordering)
 * [Pagination without counts](#pagination)
 * [Versioning extension](#versioning)
 * [Autodocumentation](#autodocumentation) - extension for [Django Rest Swagger][drs]
@@ -98,6 +99,46 @@ custom behaviour by overriding the followin method in the Serializer:
 ```python
     def get_fields_for_serialization(self, obj):
         return {"name", "id"}
+```
+
+# Auto filtering and ordering
+
+### Rationale
+
+There are nice OrderingFilter and DjangoFilterBackend backends in place, however sorting and filtering fields have to be declared explicitly, which is sometimes time consuming. That's why we've created a decorator that allows to sort & filter (with some extra lookup methods by default) by all the indexed fields present in model and in serializer class (as non write-only). Non-indexed fields may also be added to sorting & filtering, but it must be done explicitly - the idea is, that ordering or filtering by non-indexed field is not optimal from the DB perspective, so if the field is not included in sorting/filtering you should rather create index on it than declare it explicitly.
+
+Decorator works with explicitly defined FilterBackends, as well as with explicitly defined ordering_fields, filter_fields or filter_class. In order to work, it requires ModelSerializer (obtainable either serializer_class or get_serializer_class), from which fields & model class are extracted.
+
+# Usage
+
+```python
+    @autofilter()
+    class SomeAPI(...):
+        serializer_class = SomeModelSerializer
+
+    # it works well with autodoc:
+    @autodoc()  # autodoc should be before autofilter, so it operates on the result from autofilter
+    @autofilter()
+    class SomeAPI(...):
+        serializer_class = SomeModelSerializer
+
+    # you can add some extra fields to sort or filter
+    @autofilter(extra_filter=("non_indexed_field", ), extra_ordering=("non_indexed_field", ))
+    class SomeAPI(...):
+        serializer_class = SomeModelSerializer
+        ordering_fields = ("other_non_indexed_field", )
+        filter_fields = ("other_non_indexed_field", )
+
+    # it works also when you have a custom filter_class set
+    class SomeFilter(filters.FilterSet):
+        class Meta:
+            model = SomeModel
+            fields = ("non_indexed_field", )
+
+    @autofilter()
+    class SomeAPI(...):
+        serializer_class = SomeModelSerializer
+        filter_class = SomeFilter
 ```
 
 # Pagination
@@ -308,6 +349,20 @@ If default pagination class is defined, and you don't want it to be added, you c
 ```python
     class SomeClassWithoutPagination(RetrieveAPIView):
         pagination_class = None
+```
+
+### OrderingAndFiltering
+This one is adding ordering & filtering information, based on OrderingFilter and DjangoFilterBackend for "get" method in swagger in following format:
+```
+    Ordering:
+        usage: ?ordering=last_name,-date_of_birth
+        available fields: id, first_name, last_name, date_of_birth
+
+    Filtering:
+        id: exact, __gt, __gte, __lt, __lte, __in
+        date_of_birth: exact, __gt, __gte, __lt, __lte, __in
+        first_name: exact, __gt, __gte, __lt, __lte, __in, __icontains
+        last_name: exact, __gt, __gte, __lt, __lte, __in, __icontains
 ```
 
 #### Versioning
