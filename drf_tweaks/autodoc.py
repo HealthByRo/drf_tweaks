@@ -126,7 +126,7 @@ class OrderingAndFilteringAutodoc(AutodocBase):
         text = ""
         ordering_fields = getattr(documented_cls, "ordering_fields", None)
         if ordering_fields:
-            text = "<b>Sorting:</b>\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\tavailable fields: "
+            text = "<b>Sorting:</b>\n\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\n\tavailable fields: "
             text += ", ".join(sorted(ordering_fields))
 
         filter_fields = getattr(documented_cls, "filter_fields", None)
@@ -135,14 +135,16 @@ class OrderingAndFilteringAutodoc(AutodocBase):
             filter_fields = filter_class.Meta.fields
         if filter_fields:
             if ordering_fields:
-                text += "\n\n"
+                text += "\n\n\n\n"
             text += "<b>Filtering:</b>"
             if isinstance(filter_fields, dict):
                 for key in sorted(filter_fields.keys()):
-                    text += "\n\t%s: %s" % (key, ", ".join(x if x == "exact" else "__" + x for x in filter_fields[key]))
+                    text += "\n\n\t%s: %s" % (
+                        key, ", ".join(x if x == "exact" else "__" + x for x in filter_fields[key])
+                    )
             else:
                 for field in sorted(filter_fields):
-                    text += "\n\t%s: exact" % field
+                    text += "\n\n\t%s: exact" % field
 
         return text
 

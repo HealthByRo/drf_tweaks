@@ -169,23 +169,37 @@ offset -- optional, offset"""
 AUTOFILTERED_GET = """Test
 
 <b>Sorting:</b>
+
 \tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
+
 \tavailable fields: fk, id, indexed_char, indexed_int
 
+
+
 <b>Filtering:</b>
+
 \tfk: exact, __gt, __gte, __lt, __lte, __in
+
 \tid: exact, __gt, __gte, __lt, __lte, __in
+
 \tindexed_char: exact, __gt, __gte, __lt, __lte, __in, __icontains
+
 \tindexed_int: exact, __gt, __gte, __lt, __lte, __in"""
 
 FILTER_SORTING_GET = """Test
 
 <b>Sorting:</b>
+
 \tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
+
 \tavailable fields: fk, id
 
+
+
 <b>Filtering:</b>
+
 \tfk: exact
+
 \tid: exact"""
 
 
