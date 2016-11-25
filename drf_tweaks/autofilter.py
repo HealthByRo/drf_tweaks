@@ -16,7 +16,7 @@ def autofilter(extra_ordering=None, extra_filter=None):
         for serializer_field in serializer_class()._readable_fields:
             name = serializer_field.field_name
             try:
-                if name == "id" or model_cls._meta.get_field(name).db_index:
+                if name == "id" or getattr(model_cls._meta.get_field(name), "db_index", False):
                     fields.add(name)
             except FieldDoesNotExist:
                 pass
