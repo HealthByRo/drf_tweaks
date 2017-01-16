@@ -179,7 +179,7 @@ class BaseInfoAutodoc(AutodocBase):
 if hasattr(settings, "AUTODOC_DEFAULT_CLASSESS"):
     DEFAULT_CLASSESS = [import_from_string(x, "") for x in settings.AUTODOC_DEFAULT_CLASSESS]
 else:
-    DEFAULT_CLASSESS = (BaseInfoAutodoc, PaginationAutodoc, VersioningAutodoc, OrderingAndFilteringAutodoc)
+    DEFAULT_CLASSESS = (BaseInfoAutodoc, OrderingAndFilteringAutodoc, PaginationAutodoc, VersioningAutodoc)
 
 
 def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
