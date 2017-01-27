@@ -189,9 +189,9 @@ class TestAutoFilter(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
 
-        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__isnull": True})
+        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__exact": ''})
         self.assertEqual(response.status_code, 200)
-        for r in response['data']:
+        for r in response.data:
             self.assertIsNone(r['nullable_field'])
         self.assertEqual(len(response.data), 1)
 
