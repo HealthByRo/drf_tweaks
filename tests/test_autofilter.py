@@ -22,7 +22,7 @@ class SampleModelForAutofilterSerializerVer1(serializers.ModelSerializer):
         model = SampleModelForAutofilter
         fields = ["id", "fk", "non_indexed_fk", "indexed_int", "non_indexed_int", "indexed_char", "non_indexed_char",
                   "indexed_text", "non_indexed_text", "indexed_url", "non_indexed_url", "indexed_email",
-                  "non_indexed_email", "some_property"]
+                  "non_indexed_email", "nullable_field", "some_property"]
 
 
 class SampleModelForAutofilterSerializerVer2(serializers.ModelSerializer):
@@ -114,7 +114,8 @@ class TestAutoFilter(TestCase):
             indexed_url="https://www.google.com/?q=1",
             non_indexed_url="https://www.google.com/?q=2",
             indexed_email="abc@gmail.com",
-            non_indexed_email="cde@gmail.com"
+            non_indexed_email="cde@gmail.com",
+            nullable_field=True,
         )
         self.smfa2 = SampleModelForAutofilter.objects.create(
             fk=self.sm2,
@@ -155,9 +156,11 @@ class TestAutoFilter(TestCase):
         self.assertEqual(set(SampleApiV2.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char"})
 
         for key in ("id", "fk", "indexed_int"):
-            self.assertEqual(SampleApiV1.filter_fields[key], ["exact", "gt", "gte", "lt", "lte", "in"])
+            self.assertEqual(SampleApiV1.filter_fields[key], ["exact", "gt", "gte", "lt", "lte", "in", "isnull"])
         for key in ("indexed_char", "indexed_text", "indexed_url", "indexed_email"):
-            self.assertEqual(SampleApiV1.filter_fields[key], ["exact", "gt", "gte", "lt", "lte", "in", "icontains"])
+            self.assertEqual(
+                SampleApiV1.filter_fields[key],
+                ["exact", "gt", "gte", "lt", "lte", "in", "isnull", "icontains"])
 
     def test_adding_filter_fields_with_extra_and_explicit(self):
         self.assertEqual(set(SampleApiV3.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
@@ -185,6 +188,12 @@ class TestAutoFilter(TestCase):
         response = self.client.get(reverse("autofilter_test"), data={"id__gt": 0})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
+
+        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__isnull": True})
+        self.assertEqual(response.status_code, 200)
+        for r in response['data']:
+            self.assertIsNone(r['nullable_field'])
+        self.assertEqual(len(response.data), 1)
 
         response = self.client.get(reverse("autofilter_test"), data={"id": self.smfa1.id})
         self.assertEqual(response.status_code, 200)

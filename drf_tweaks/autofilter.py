@@ -63,7 +63,7 @@ def autofilter(extra_ordering=None, extra_filter=None):
         for key in new_filter_keys:
             try:
                 field = model_cls._meta.get_field(key)
-                new_filters[key] = ["exact", "gt", "gte", "lt", "lte", "in"]
+                new_filters[key] = ["exact", "gt", "gte", "lt", "lte", "in", "isnull"]
                 if isinstance(field, models.CharField) or isinstance(field, models.TextField):
                     new_filters[key].append("icontains")
             except FieldDoesNotExist:

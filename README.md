@@ -359,7 +359,7 @@ This one is adding ordering & filtering information, based on OrderingFilter and
         available fields: id, first_name, last_name, date_of_birth
 
     Filtering:
-        id: exact, __gt, __gte, __lt, __lte, __in
+        id: exact, __gt, __gte, __lt, __lte, __in, __isnull
         date_of_birth: exact, __gt, __gte, __lt, __lte, __in
         first_name: exact, __gt, __gte, __lt, __lte, __in, __icontains
         last_name: exact, __gt, __gte, __lt, __lte, __in, __icontains

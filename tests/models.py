@@ -20,6 +20,7 @@ class SampleModelForAutofilter(models.Model):
     non_indexed_url = models.URLField()
     indexed_email = models.EmailField(db_index=True)
     non_indexed_email = models.EmailField()
+    nullable_field = models.NullBooleanField(null=True)
 
     @property
     def some_property(self):
