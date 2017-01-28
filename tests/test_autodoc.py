@@ -10,9 +10,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_tweaks.autodoc import BaseInfoAutodoc
-from drf_tweaks.autodoc import PaginationAutodoc
-from drf_tweaks.autodoc import autodoc
+from drf_tweaks.autodoc import autodoc, BaseInfoAutodoc, PaginationAutodoc, PermissionsAutodoc
 from drf_tweaks.autofilter import autofilter
 from drf_tweaks.pagination import NoCountsLimitOffsetPagination
 from drf_tweaks.versioning import ApiVersionMixin
@@ -30,15 +28,24 @@ class SampleModelForAutofilterSerializer(serializers.ModelSerializer):
         fields = ["id", "fk", "non_indexed_fk", "indexed_int", "non_indexed_int", "indexed_char", "non_indexed_char"]
 
 
+class NoDocAllowAny(AllowAny):
+    pass
+
+
+class DocumentedAllowAny(AllowAny):
+    """ this is some doc for permission that should be added to doc """
+    pass
+
+
 # sample APIs
 @autodoc("Test")
 class SampleNotVersionedApi(RetrieveUpdateAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (DocumentedAllowAny,)
     pagination_class = None
 
 
 class SampleVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (NoDocAllowAny,)
     versioning_class = AcceptHeaderVersioning
     pagination_class = NoCountsLimitOffsetPagination
 
@@ -54,6 +61,8 @@ class SampleVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView):
 
 @autodoc("Test", classess=(BaseInfoAutodoc, ))
 class SampleVersionedApiT1(SampleVersionedApi):
+    permission_classes = (NoDocAllowAny,)
+
     def put(self, *args, **kwargs):
         """ some description
         ---
@@ -81,8 +90,9 @@ class SampleVersionedApiT1(SampleVersionedApi):
         return "custom yaml"
 
 
-@autodoc(skip_classess=(PaginationAutodoc, ))
+@autodoc(skip_classess=(PaginationAutodoc, PermissionsAutodoc))
 class SampleVersionedApiT2(SampleVersionedApi):
+    permission_classes = (NoDocAllowAny,)
     CUSTOM_DEPRECATED_VERSION = 2
     CUSTOM_OBSOLETE_VERSION = 1
 
@@ -96,7 +106,7 @@ class SampleVersionedApiT3(SampleVersionedApi):
 @autofilter()
 class SampleAutofilterApi(ListAPIView):
     queryset = SampleModelForAutofilter.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (NoDocAllowAny,)
     serializer_class = SampleModelForAutofilterSerializer
     filter_backends = (filters.OrderingFilter,)
     pagination_class = None
@@ -112,7 +122,7 @@ class SampleFilterClass(FilterSet):
 @autofilter()
 class SampleAutofilterApiV2(ListAPIView):
     queryset = SampleModelForAutofilter.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (NoDocAllowAny,)
     serializer_class = SampleModelForAutofilterSerializer
     filter_backends = (filters.OrderingFilter,)
     filter_class = SampleFilterClass
@@ -122,7 +132,7 @@ class SampleAutofilterApiV2(ListAPIView):
 @autodoc("Test")
 class SampleAutofilterApiV3(ListAPIView):
     queryset = SampleModelForAutofilter.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (NoDocAllowAny,)
     serializer_class = SampleModelForAutofilterSerializer
     filter_fields = ("id", "fk")
     ordering_fields = ("id", "fk")
@@ -131,6 +141,13 @@ class SampleAutofilterApiV3(ListAPIView):
 
 # expected docstrings
 BASE_INFO_ONLY = "Test"
+
+BASE_INFO_WITH_PERMISSIONS = """Test
+
+<b>Permissions:</b>
+<i>DocumentedAllowAny</i>
+ this is some doc for permission that should be added to doc"""
+
 BASE_INFO_WITH_DOCSTRING_PUT = """Test
 
 some description
@@ -168,6 +185,9 @@ offset -- optional, offset"""
 
 AUTOFILTERED_GET = """Test
 
+<b>Permissions:</b>
+<i>NoDocAllowAny</i>
+
 <b>Sorting:</b>
 
 \tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
@@ -188,6 +208,9 @@ AUTOFILTERED_GET = """Test
 
 FILTER_SORTING_GET = """Test
 
+<b>Permissions:</b>
+<i>NoDocAllowAny</i>
+
 <b>Sorting:</b>
 
 \tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME
@@ -205,7 +228,7 @@ FILTER_SORTING_GET = """Test
 
 class AutodocTestCase(APITestCase):
     def test_base_info_only(self):
-        self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_ONLY)
+        self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_WITH_PERMISSIONS)
 
     def test_base_info_with_custom_data_and_overriding_classes(self):
         self.assertEqual(SampleVersionedApiT1.put.__doc__, BASE_INFO_WITH_DOCSTRING_PUT)
@@ -220,7 +243,7 @@ class AutodocTestCase(APITestCase):
         self.assertEqual(SampleVersionedApiT3.put.__doc__, BASE_INFO_ONLY)
 
     def test_autodoc_with_existing_docstring(self):
-        self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_ONLY)
+        self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_WITH_PERMISSIONS)
 
     def test_autodoc_with_autofilter(self):
         self.assertEqual(SampleAutofilterApi.get.__doc__, AUTOFILTERED_GET)

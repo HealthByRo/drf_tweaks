@@ -86,6 +86,26 @@ class PaginationAutodoc(AutodocBase):
         return "\n".join(params)
 
 
+class PermissionsAutodoc(AutodocBase):
+    """ Autodoc for permission classes - shows permissions + docstrings for them """
+    applies_to = ("get", "post", "put", "patch", "delete")
+
+    @classmethod
+    def _generate_yaml(cls, documented_cls, method_name):
+        return ""
+
+    @classmethod
+    def _generate_text(cls, documented_cls, method_name):
+        text = ""
+        if hasattr(documented_cls, "permission_classes") and documented_cls.permission_classes:
+            text = "<b>Permissions:</b>\n"
+            for permission_cls in documented_cls.permission_classes:
+                text += "<i>%s</i>\n" % permission_cls.__name__
+                if permission_cls.__doc__:
+                    text += "%s\n" % permission_cls.__doc__
+        return text
+
+
 class VersioningAutodoc(AutodocBase):
     """ autodoc for versioning - applied only when ApiVersionMixin is present and
         rest_framework.versioning.AcceptHeaderVersioning """
@@ -179,7 +199,8 @@ class BaseInfoAutodoc(AutodocBase):
 if hasattr(settings, "AUTODOC_DEFAULT_CLASSESS"):
     DEFAULT_CLASSESS = [import_from_string(x, "") for x in settings.AUTODOC_DEFAULT_CLASSESS]
 else:
-    DEFAULT_CLASSESS = (BaseInfoAutodoc, OrderingAndFilteringAutodoc, PaginationAutodoc, VersioningAutodoc)
+    DEFAULT_CLASSESS = (BaseInfoAutodoc, PermissionsAutodoc, OrderingAndFilteringAutodoc, PaginationAutodoc,
+                        VersioningAutodoc)
 
 
 def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
