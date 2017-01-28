@@ -115,7 +115,7 @@ class TestAutoFilter(TestCase):
             non_indexed_url="https://www.google.com/?q=2",
             indexed_email="abc@gmail.com",
             non_indexed_email="cde@gmail.com",
-            nullable_field=True,
+            nullable_field=1,
         )
         self.smfa2 = SampleModelForAutofilter.objects.create(
             fk=self.sm2,
@@ -142,17 +142,18 @@ class TestAutoFilter(TestCase):
 
     def test_adding_ordering_fields(self):
         self.assertEqual(set(SampleApiV1.ordering_fields), {"id", "fk", "indexed_int", "indexed_char", "indexed_text",
-                                                            "indexed_url", "indexed_email"})
+                                                            "indexed_url", "indexed_email", "nullable_field"})
         self.assertEqual(set(SampleApiV2.ordering_fields), {"id", "fk", "indexed_int", "indexed_char"})
 
     def test_adding_ordering_fields_with_extra_and_explicit(self):
         self.assertEqual(set(SampleApiV3.ordering_fields), {"id", "fk", "indexed_int", "indexed_char", "indexed_text",
                                                             "indexed_url", "indexed_email", "non_indexed_fk",
-                                                            "non_indexed_char"})
+                                                            "non_indexed_char", "nullable_field"})
 
     def test_adding_filter_fields(self):
         self.assertEqual(set(SampleApiV1.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
-                                                                 "indexed_text", "indexed_url", "indexed_email"})
+                                                                 "indexed_text", "indexed_url", "indexed_email",
+                                                                 "nullable_field"})
         self.assertEqual(set(SampleApiV2.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char"})
 
         for key in ("id", "fk", "indexed_int"):
@@ -165,7 +166,8 @@ class TestAutoFilter(TestCase):
     def test_adding_filter_fields_with_extra_and_explicit(self):
         self.assertEqual(set(SampleApiV3.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                  "indexed_text", "indexed_url", "indexed_email",
-                                                                 "non_indexed_int", "non_indexed_email"})
+                                                                 "non_indexed_int", "non_indexed_email",
+                                                                 "nullable_field"})
 
     def test_adding_filter_fields_with_extra_andfilter_class(self):
         self.assertNotEqual(SampleApiV4.filter_class, SampleApiV5.filter_class)
@@ -174,26 +176,34 @@ class TestAutoFilter(TestCase):
         self.assertEqual(set(SampleApiV4.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
                                                                             "indexed_email", "non_indexed_int",
-                                                                            "non_indexed_email"})
+                                                                            "non_indexed_email", "nullable_field"})
 
         self.assertEqual(set(SampleApiV5.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
-                                                                            "indexed_email", "non_indexed_email"})
+                                                                            "indexed_email", "non_indexed_email",
+                                                                            "nullable_field"})
 
         self.assertEqual(set(SampleApiV6.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
-                                                                            "indexed_email", "non_indexed_email"})
+                                                                            "indexed_email", "non_indexed_email",
+                                                                            "nullable_field"})
 
     def test_integration_filtering(self):
         response = self.client.get(reverse("autofilter_test"), data={"id__gt": 0})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 2)
 
-        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__exact": ''})
+        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__isnull": True})
         self.assertEqual(response.status_code, 200)
-        for r in response.data:
-            self.assertIsNone(r['nullable_field'])
         self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.smfa2.id)
+        self.assertIsNone(response.data[0]["nullable_field"])
+
+        response = self.client.get(reverse("autofilter_test"), data={"nullable_field__isnull": False})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.smfa1.id)
+        self.assertEqual(response.data[0]["nullable_field"], 1)
 
         response = self.client.get(reverse("autofilter_test"), data={"id": self.smfa1.id})
         self.assertEqual(response.status_code, 200)
