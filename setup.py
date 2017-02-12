@@ -53,7 +53,7 @@ setup(
     url='https://github.com/ArabellaTech/drf_tweaks',
     license='MIT',
     description='Set of tweaks for Django Rest Framework',
-    long_description=read_md('README.md'),
+    long_description=read_md('README.rst'),
     author='Pawel Krzyzaniak',
     author_email='pawelk@arabel.la',
     packages=get_packages('drf_tweaks'),
