@@ -1,4 +1,4 @@
-include README.md
+include README.rst
 include LICENSE.md
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
