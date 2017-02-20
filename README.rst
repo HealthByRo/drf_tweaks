@@ -407,7 +407,7 @@ This one is adding parameters to "get" method in swagger in following format:
     page_size -- optional, page size
 
 
-It adds all "*_query_param" from pagination class, as long as they have name defined, so for standard
+It adds all "\*_query_param" from pagination class, as long as they have name defined, so for standard
 PageNumberPagination, that has page_size_query_param defined as None it will not be enclodes.
 
 If default pagination class is defined, and you don't want it to be added, you can simply:
