@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from copy import copy
-
 from django.db import models
 from django.db.models.fields import FieldDoesNotExist
 from django_filters.rest_framework import DjangoFilterBackend

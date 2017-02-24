@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
-
 from rest_framework import serializers
-from rest_framework.fields import (DjangoValidationError, OrderedDict,
-                                   SkipField, ValidationError, api_settings,
-                                   empty, set_value)
-from rest_framework.serializers import PKOnlyObject, as_serializer_error
+from rest_framework.fields import (api_settings, DjangoValidationError, empty, OrderedDict, set_value, SkipField,
+                                   ValidationError)
+from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
 
 class SerializerCustomizationMixin(object):
