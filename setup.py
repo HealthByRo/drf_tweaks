@@ -7,6 +7,10 @@ import re
 from setuptools import setup
 
 
+def local_open(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname))
+
+
 def read_md(f):
     return io.open(f, 'r', encoding='utf-8').read()
 
@@ -47,6 +51,9 @@ def get_package_data(package):
 version = get_version('drf_tweaks')
 
 
+requirements = local_open('requirements/requirements-base.txt')
+required_to_install = [dist.strip() for dist in requirements.readlines()]
+
 setup(
     name='drf_tweaks',
     version=version,
@@ -58,7 +65,7 @@ setup(
     author_email='pawelk@arabel.la',
     packages=get_packages('drf_tweaks'),
     package_data=get_package_data('drf_tweaks'),
-    install_requires=[],
+    install_requires=required_to_install,
     zip_safe=False,
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -68,7 +75,9 @@ setup(
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Topic :: Internet :: WWW/HTTP',
     ]
 )
