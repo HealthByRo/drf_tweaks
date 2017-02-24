@@ -16,7 +16,8 @@ PYTEST_ARGS = {
 
 FLAKE8_ARGS = ['drf_tweaks', 'tests', '--ignore=E501']
 
-ISORT_ARGS = ['--recursive', '--check-only', '-o' 'uritemplate', '-p', 'tests', 'drf_tweaks']
+ISORT_ARGS = ['--recursive', '--check-only', '-o' 'uritemplate', '-p', 'tests', 'drf_tweaks', '-m', '0', '-w', '120',
+              '-fas', '-ds']
 
 sys.path.append(os.path.dirname(__file__))
 
