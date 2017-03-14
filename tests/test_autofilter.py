@@ -161,7 +161,7 @@ class TestAutoFilter(TestCase):
         for key in ("indexed_char", "indexed_text", "indexed_url", "indexed_email"):
             self.assertEqual(
                 SampleApiV1.filter_fields[key],
-                ["exact", "gt", "gte", "lt", "lte", "in", "isnull", "icontains"])
+                ["exact", "gt", "gte", "lt", "lte", "in", "isnull", "icontains", "istartswith"])
 
     def test_adding_filter_fields_with_extra_and_explicit(self):
         self.assertEqual(set(SampleApiV3.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
@@ -219,6 +219,15 @@ class TestAutoFilter(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["id"], self.smfa2.id)
+
+        response = self.client.get(reverse("autofilter_with_class_test"), data={"indexed_text__istartswith": "lOr"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.smfa2.id)
+
+        response = self.client.get(reverse("autofilter_with_class_test"), data={"indexed_text__istartswith": "lr"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 0)
 
     def test_integration_ordering(self):
         response = self.client.get(reverse("autofilter_test"), data={"ordering": 'id'})

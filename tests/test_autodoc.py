@@ -202,7 +202,7 @@ AUTOFILTERED_GET = """Test
 
 \tid: exact, __gt, __gte, __lt, __lte, __in, __isnull
 
-\tindexed_char: exact, __gt, __gte, __lt, __lte, __in, __isnull, __icontains
+\tindexed_char: exact, __gt, __gte, __lt, __lte, __in, __isnull, __icontains, __istartswith
 
 \tindexed_int: exact, __gt, __gte, __lt, __lte, __in, __isnull"""
 
