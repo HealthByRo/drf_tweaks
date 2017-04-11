@@ -40,18 +40,15 @@ def autofilter(extra_ordering=None, extra_filter=None):
         if extra_filter:
             new_filter_keys |= set(extra_filter)
 
-        if getattr(cls, "filter_class", None):
-            class new_filter_class(cls.filter_class):
-                class Meta(cls.filter_class.Meta):
-                    pass
-            cls.filter_class = new_filter_class
-            where_to_set = cls.filter_class.Meta
-            fields_key = "fields"
+        update_class = False
+        explicit_filters = None
+        if hasattr(cls, "filter_class"):
+            update_class = True
+            if hasattr(cls.filter_class, "Meta"):
+                explicit_filters = getattr(cls.filter_class.Meta, "fields", None)
         else:
-            where_to_set = cls
-            fields_key = "filter_fields"
+            explicit_filters = getattr(cls, "filter_fields", None)
 
-        explicit_filters = getattr(where_to_set, fields_key, None)
         if explicit_filters:
             if isinstance(explicit_filters, dict):
                 new_filters = explicit_filters
@@ -68,7 +65,13 @@ def autofilter(extra_ordering=None, extra_filter=None):
             except FieldDoesNotExist:
                 pass
 
-        setattr(where_to_set, fields_key, new_filters)
+        if update_class:
+            class new_filter_class(cls.filter_class):
+                class Meta(cls.filter_class.Meta):
+                    fields = new_filters
+            cls.filter_class = new_filter_class
+        else:
+            cls.filter_fields = new_filters
 
         return cls
     return wrapped
