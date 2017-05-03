@@ -215,6 +215,21 @@ class TestAutoFilter(TestCase):
         self.assertEqual(len(response.data), 1)
         self.assertEqual(response.data[0]["id"], self.smfa1.id)
 
+        response = self.client.get(
+            reverse("autofilter_with_class_test"), data={"indexed_int__lte": 2, "indexed__gt": 0}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]["id"], self.smfa1.id)
+        self.assertEqual(response.data[1]["id"], self.smfa2.id)
+
+        response = self.client.get(
+            reverse("autofilter_with_class_test"), data={"indexed_int__lte": 2, "indexed_int__gt": 1}
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 1)
+        self.assertEqual(response.data[0]["id"], self.smfa2.id)
+
         response = self.client.get(reverse("autofilter_with_class_test"), data={"indexed_text__icontains": "Orem"})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 1)
