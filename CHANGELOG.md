@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.2.9] - 2017-05-11
+### Fixed
+- fixed allow_null when forcing required field
+
 ## [0.2.8] - 2017-04-11
 ### Fixed
 - fixed extending existing filter class

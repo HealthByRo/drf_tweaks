@@ -37,6 +37,7 @@ class SerializerCustomizationMixin(object):
 
         for f in self.required_fields:
             fields[f].required = True
+            fields[f].allow_null = False
             fields[f].allow_blank = False
 
         return fields
