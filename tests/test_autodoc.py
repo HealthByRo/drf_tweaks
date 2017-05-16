@@ -285,6 +285,4 @@ class AutodocTestCase(APITestCase):
         self.assertEqual(SampleAutofilterApiV2.get.__doc__, AUTOFILTERED_GET)
 
     def test_autodoc_for_filter_and_order(self):
-        print (FILTER_SORTING_GET)
-        print (SampleAutofilterApiV3.get.__doc__)
         self.assertEqual(SampleAutofilterApiV3.get.__doc__, FILTER_SORTING_GET)
