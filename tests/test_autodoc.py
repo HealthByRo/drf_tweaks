@@ -146,7 +146,15 @@ BASE_INFO_WITH_PERMISSIONS = """Test
 
 <b>Permissions:</b>
 <i>DocumentedAllowAny</i>
- this is some doc for permission that should be added to doc"""
+ this is some doc for permission that should be added to doc
+
+
+
+<b>Limiting response fields</b>
+
+\twill limit response to only requested fields.
+
+\tusage: ?fields=FIELD_NAME_1,FIELD_NAME_2"""
 
 BASE_INFO_WITH_DOCSTRING_PUT = """Test
 
@@ -170,7 +178,14 @@ some yaml
 
 custom yaml"""
 
-VERSIONING_GET = """Versions lower or equal to 2 are <b>deprecated</b>
+VERSIONING_GET = """<b>Limiting response fields</b>
+
+\twill limit response to only requested fields.
+
+\tusage: ?fields=FIELD_NAME_1,FIELD_NAME_2
+
+
+Versions lower or equal to 2 are <b>deprecated</b>
 
 Versions lower or equal to 1 are <b>obsolete</b>
 ---
@@ -187,6 +202,16 @@ AUTOFILTERED_GET = """Test
 
 <b>Permissions:</b>
 <i>NoDocAllowAny</i>
+
+
+
+<b>Limiting response fields</b>
+
+\twill limit response to only requested fields.
+
+\tusage: ?fields=FIELD_NAME_1,FIELD_NAME_2
+
+
 
 <b>Sorting:</b>
 
@@ -210,6 +235,16 @@ FILTER_SORTING_GET = """Test
 
 <b>Permissions:</b>
 <i>NoDocAllowAny</i>
+
+
+
+<b>Limiting response fields</b>
+
+\twill limit response to only requested fields.
+
+\tusage: ?fields=FIELD_NAME_1,FIELD_NAME_2
+
+
 
 <b>Sorting:</b>
 
@@ -250,4 +285,6 @@ class AutodocTestCase(APITestCase):
         self.assertEqual(SampleAutofilterApiV2.get.__doc__, AUTOFILTERED_GET)
 
     def test_autodoc_for_filter_and_order(self):
+        print (FILTER_SORTING_GET)
+        print (SampleAutofilterApiV3.get.__doc__)
         self.assertEqual(SampleAutofilterApiV3.get.__doc__, FILTER_SORTING_GET)
