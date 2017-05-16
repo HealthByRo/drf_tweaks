@@ -143,10 +143,11 @@ class OrderingAndFilteringAutodoc(AutodocBase):
 
     @classmethod
     def _generate_text(cls, documented_cls, method_name):
-        text = ""
+        text = "\n\n<b>Limiting response fields</b>\n\n\t will limit response to only requested fields.\n\n\t"
+        text += "usage: ?fields=FIELD_NAME_1,FIELD_NAME_2\n\n\t\n\n"
         ordering_fields = getattr(documented_cls, "ordering_fields", None)
         if ordering_fields:
-            text = "<b>Sorting:</b>\n\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\n\tavailable fields: "
+            text += "<b>Sorting:</b>\n\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\n\tavailable fields: "
             text += ", ".join(sorted(ordering_fields))
 
         filter_fields = getattr(documented_cls, "filter_fields", None)
