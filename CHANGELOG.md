@@ -1,5 +1,8 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.2.10] - 2017-05-16
+### Added
+- Updated swagger docs with limiting fields
 
 ## [0.2.9] - 2017-05-11
 ### Fixed
