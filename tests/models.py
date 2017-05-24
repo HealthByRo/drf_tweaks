@@ -21,6 +21,7 @@ class SampleModelForAutofilter(models.Model):
     indexed_email = models.EmailField(db_index=True)
     non_indexed_email = models.EmailField()
     nullable_field = models.IntegerField(null=True, db_index=True)
+    unique_text = models.CharField(max_length=255, unique=True)
 
     @property
     def some_property(self):

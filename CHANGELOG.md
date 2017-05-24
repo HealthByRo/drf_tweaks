@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.2.11] - 2017-05-24
+### Added
+- Added unique fields to autofilter
+
 ## [0.2.10] - 2017-05-16
 ### Added
 - Updated swagger docs with limiting fields
