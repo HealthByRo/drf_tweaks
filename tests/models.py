@@ -26,3 +26,12 @@ class SampleModelForAutofilter(models.Model):
     @property
     def some_property(self):
         return "property"
+
+
+class SecondLevelModelForContextPassingTest(models.Model):
+    name = models.CharField(max_length=255)
+
+
+class TopLevelModelForContextPassingTest(models.Model):
+    second = models.ForeignKey(SecondLevelModelForContextPassingTest, related_name="top")
+    name = models.CharField(max_length=255)

@@ -6,6 +6,23 @@ from rest_framework.fields import (api_settings, DjangoValidationError, empty, O
 from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
 
+class ContextPassing(object):
+    def __init__(self, field, parent):
+        self.field = field
+        self.parent = parent
+        self.has_context = hasattr(field, "_context")
+        self.old_context = None
+
+    def __enter__(self):
+        if self.has_context:
+            self.old_context = self.field._context
+            self.field._context = self.parent._context
+
+    def __exit__(self, type, value, traceback):
+        if self.has_context:
+            self.field._context = self.old_context
+
+
 class SerializerCustomizationMixin(object):
     # blank/required errors override
     required_error = blank_error = None
@@ -72,7 +89,8 @@ class SerializerCustomizationMixin(object):
             if check_for_none is None:
                 ret[field.field_name] = None
             else:
-                ret[field.field_name] = field.to_representation(attribute)
+                with ContextPassing(field, self):
+                    ret[field.field_name] = field.to_representation(attribute)
 
         return ret
 
