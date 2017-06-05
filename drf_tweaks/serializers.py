@@ -7,19 +7,61 @@ from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
 
 class ContextPassing(object):
-    def __init__(self, field, parent):
+    @classmethod
+    def filter_fields(cls, field_name, fields):
+        filtered_fields = set()
+        for field in fields:
+            parts = field.split("__", 1)
+            if len(parts) == 2 and parts[0] == field_name:
+                filtered_fields.add(parts[1])
+        return filtered_fields
+
+    def __init__(self, field, parent, only_fields, include_fields):
         self.field = field
         self.parent = parent
         self.has_context = hasattr(field, "_context")
         self.old_context = None
+        self.only_fields = self.filter_fields(field.field_name, only_fields)
+        self.include_fields = self.filter_fields(field.field_name, include_fields)
+        self.on_exit_delete_fields = False
+        self.on_exit_delete_include_fields = False
+        self.old_fields = None
+        self.old_include_fields = None
 
     def __enter__(self):
         if self.has_context:
+            # context passing
             self.old_context = self.field._context
             self.field._context = self.parent._context
 
+            # fields filtering
+            if "fields" in self.field._context:
+                self.old_fields = self.field._context["fields"]
+            else:
+                self.on_exit_delete_fields = True
+            self.field._context["fields"] = self.only_fields
+
+            # on demand fields
+            if "include_fields" in self.field._context:
+                self.old_include_fields = self.field._context["include_fields"]
+            else:
+                self.on_exit_delete_include_fields = True
+            self.field._context["include_fields"] = self.include_fields
+
     def __exit__(self, type, value, traceback):
         if self.has_context:
+            # modification was done on parent's context, so we roll them back before setting the old contexts
+            if self.on_exit_delete_fields:
+                del self.field._context["fields"]
+            else:
+                self.field._context["fields"] = self.old_fields
+
+            if self.on_exit_delete_include_fields:
+                del self.field._context["include_fields"]
+            else:
+                self.field._context["include_fields"] = self.old_include_fields
+
+            # restoring old context
             self.field._context = self.old_context
 
 
@@ -59,24 +101,49 @@ class SerializerCustomizationMixin(object):
 
         return fields
 
+    @classmethod
+    def add_main_fields_names_from_nested(cls, fields):
+        """If you add main_field__secondary_field, main_field should also be in the set."""
+        to_add = set()
+        for field in fields:
+            parts = field.split("__", 1)
+            if len(parts) == 2:
+                to_add.add(parts[0])
+        return fields | to_add
+
     # control over which fields get serialized
-    def get_fields_for_serialization(self, obj):
-        if "fields" in self.context:
-            return self.context["fields"]
-        if "request" in self.context and "fields" in self.context["request"].query_params:
-            return self.context["request"].query_params["fields"].split(",")
-        return None
+    def get_fields_for_serialization(self, fields_name):
+        fields = set()
+        if fields_name in self.context:
+            fields = set(self.context[fields_name])
+        elif "request" in self.context and fields_name in self.context["request"].query_params:
+            fields = set(self.context["request"].query_params[fields_name].split(","))
+        return self.add_main_fields_names_from_nested(fields)
 
     def to_representation(self, instance):
-        """ override of the default to_representation - to filter out fields which are doctors' only without first
-            serializing them - so the DB does net get called - important for ManyToMany """
+        """Override of the default to_representation.
+
+        - Added functionality:
+        - context passing
+        - fields filtering (w/o touching db when not necessary)
+        - on_demand fields.
+        """
         ret = OrderedDict()
         fields = self._readable_fields
-        only_fields = self.get_fields_for_serialization(instance)
+
+        # ++ change to the original code from DRF
+        only_fields = self.get_fields_for_serialization("fields")
+        include_fields = self.get_fields_for_serialization("include_fields")
+        on_demand_fields = getattr(self.Meta, "on_demand_fields", set())
+        # -- change
 
         for field in fields:
             # ++ change to the original code from DRF
-            if only_fields and field.field_name not in only_fields:
+            if only_fields:
+                # if fields are defined for a given level, we ignore "include_fields"
+                if field.field_name not in only_fields:
+                    continue
+            elif field.field_name in on_demand_fields and field.field_name not in include_fields:
                 continue
             # -- change
 
@@ -89,9 +156,10 @@ class SerializerCustomizationMixin(object):
             if check_for_none is None:
                 ret[field.field_name] = None
             else:
-                with ContextPassing(field, self):
+                # ++ change to the original code from DRF
+                with ContextPassing(field, self, only_fields, include_fields):
                     ret[field.field_name] = field.to_representation(attribute)
-
+                # -- change
         return ret
 
     # one-step validation

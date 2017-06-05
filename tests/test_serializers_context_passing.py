@@ -19,29 +19,43 @@ factory = APIRequestFactory()
 
 class SecondLevelSerializer(ModelSerializer):
     context_value = serializers.SerializerMethodField()
+    on_demand_field = serializers.SerializerMethodField()
 
     def get_context_value(self, obj):
         if "request" in self.context:
             return self.context["request"].GET.get("test_value", "none") + "_second"
         return "missing"
 
+    def get_on_demand_field(self, obj):
+        return "on_demand"
+
     class Meta:
         model = SecondLevelModelForContextPassingTest
-        fields = ["name", "context_value"]
+        fields = ["name", "context_value", "on_demand_field"]
+        on_demand_fields = ["on_demand_field"]
 
 
 class TopLevelSerializer(ModelSerializer):
     second_data = SecondLevelSerializer(source="second", required=False)
     context_value = serializers.SerializerMethodField()
+    on_demand_field = serializers.SerializerMethodField()
+    second_on_demand_field = serializers.SerializerMethodField()
 
     def get_context_value(self, obj):
         if "request" in self.context:
             return self.context["request"].GET.get("test_value", "none")
         return "missing"
 
+    def get_on_demand_field(self, obj):
+        return "on_demand"
+
+    def get_second_on_demand_field(self, obj):
+        return "second_on_demand"
+
     class Meta:
         model = TopLevelModelForContextPassingTest
-        fields = ["name", "context_value", "second", "second_data"]
+        fields = ["name", "context_value", "second", "second_data", "on_demand_field", "second_on_demand_field"]
+        on_demand_fields = ["on_demand_field", "second_on_demand_field"]
 
 
 class SampleAPI(RetrieveUpdateAPIView):
@@ -66,12 +80,12 @@ class ContextPassingTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.data, {
-                'name': 'top',
-                'context_value': 'none',
-                'second': 1,
-                'second_data': {
-                    'name': 'second',
-                    'context_value': 'none_second'
+                "name": "top",
+                "context_value": "none",
+                "second": 1,
+                "second_data": {
+                    "name": "second",
+                    "context_value": "none_second"
                 }
             }
         )
@@ -80,12 +94,99 @@ class ContextPassingTestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
             response.data, {
-                'name': 'top',
-                'context_value': 'abc',
-                'second': 1,
-                'second_data': {
-                    'name': 'second',
-                    'context_value': 'abc_second'
+                "name": "top",
+                "context_value": "abc",
+                "second": 1,
+                "second_data": {
+                    "name": "second",
+                    "context_value": "abc_second"
+                }
+            }
+        )
+
+
+@override_settings(ROOT_URLCONF="tests.test_serializers_context_passing")
+class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
+    def setUp(self):
+        self.second = SecondLevelModelForContextPassingTest.objects.create(name="second")
+        self.top = TopLevelModelForContextPassingTest.objects.create(second=self.second, name="top")
+
+    def test_on_demand_field(self):
+        # w/o specifying on demand fields - fields are not included
+        cp_url = reverse("test-context-passing", kwargs={"pk": self.top.pk})
+        response = self.client.get(cp_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "context_value": "none",
+                "second": 1,
+                "second_data": {
+                    "name": "second",
+                    "context_value": "none_second"
+                }
+            }
+        )
+
+        # when added "include_fields=on_demand_fields - field is included
+        response = self.client.get(cp_url, {"include_fields": "on_demand_field"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "context_value": "none",
+                "second": 1,
+                "on_demand_field": "on_demand",
+                "second_data": {
+                    "name": "second",
+                    "context_value": "none_second"
+                }
+            }
+        )
+
+        # using fields
+        response = self.client.get(cp_url, {"fields": "name,on_demand_field,second_on_demand_field"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "on_demand_field": "on_demand",
+                "second_on_demand_field": "second_on_demand"
+            }
+        )
+
+        # nested include_fields
+        response = self.client.get(cp_url, {
+            "include_fields": "on_demand_field,second_on_demand_field,second_data__on_demand_field"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "context_value": "none",
+                "second": 1,
+                "on_demand_field": "on_demand",
+                "second_on_demand_field": "second_on_demand",
+                "second_data": {
+                    "name": "second",
+                    "context_value": "none_second",
+                    "on_demand_field": "on_demand",
+                }
+            }
+        )
+
+        # using fields: nested
+        response = self.client.get(cp_url, {
+            "fields": "name,on_demand_field,second_data__name,second_data__on_demand_field"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "on_demand_field": "on_demand",
+                "second_data": {
+                    "name": "second",
+                    "on_demand_field": "on_demand",
                 }
             }
         )
