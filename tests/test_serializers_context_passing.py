@@ -11,15 +11,29 @@ from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 
 from drf_tweaks.serializers import ModelSerializer
-from tests.models import SecondLevelModelForContextPassingTest, TopLevelModelForContextPassingTest
+from tests.models import (SecondLevelModelForContextPassingTest, TopLevelModelForContextPassingTest,
+                          ThirdLevelModelForNestedFilteringTest)
 
 
 factory = APIRequestFactory()
 
 
+class ThirdLevelSerializer(ModelSerializer):
+    on_demand_field = serializers.SerializerMethodField()
+
+    def get_on_demand_field(self, obj):
+        return "on_demand_third"
+
+    class Meta:
+        model = ThirdLevelModelForNestedFilteringTest
+        fields = ["name", "on_demand_field"]
+        on_demand_fields = ["on_demand_field"]
+
+
 class SecondLevelSerializer(ModelSerializer):
     context_value = serializers.SerializerMethodField()
     on_demand_field = serializers.SerializerMethodField()
+    third_data = ThirdLevelSerializer(source="third")
 
     def get_context_value(self, obj):
         if "request" in self.context:
@@ -31,8 +45,8 @@ class SecondLevelSerializer(ModelSerializer):
 
     class Meta:
         model = SecondLevelModelForContextPassingTest
-        fields = ["name", "context_value", "on_demand_field"]
-        on_demand_fields = ["on_demand_field"]
+        fields = ["name", "context_value", "on_demand_field", "third_data"]
+        on_demand_fields = ["on_demand_field", "third_data"]
 
 
 class TopLevelSerializer(ModelSerializer):
@@ -108,7 +122,8 @@ class ContextPassingTestCase(APITestCase):
 @override_settings(ROOT_URLCONF="tests.test_serializers_context_passing")
 class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
     def setUp(self):
-        self.second = SecondLevelModelForContextPassingTest.objects.create(name="second")
+        self.third = ThirdLevelModelForNestedFilteringTest.objects.create(name="third")
+        self.second = SecondLevelModelForContextPassingTest.objects.create(name="second", third=self.third)
         self.top = TopLevelModelForContextPassingTest.objects.create(second=self.second, name="top")
 
     def test_on_demand_field(self):
@@ -187,6 +202,25 @@ class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
                 "second_data": {
                     "name": "second",
                     "on_demand_field": "on_demand",
+                }
+            }
+        )
+
+        # using fields & include_fields (on different levels) & on three levels
+        response = self.client.get(cp_url, {
+            "fields": "name,second_data,second_data__third_data",
+            "include_fields": "second_data__third_data__on_demand_field"
+        })
+        self.assertEqual(response.status_code, 200)
+        print(response.data)
+        self.assertEqual(
+            response.data, {
+                "name": "top",
+                "second_data": {
+                    "third_data": {
+                        "name": "third",
+                        "on_demand_field": "on_demand_third"
+                    }
                 }
             }
         )
