@@ -26,3 +26,17 @@ class SampleModelForAutofilter(models.Model):
     @property
     def some_property(self):
         return "property"
+
+
+class ThirdLevelModelForNestedFilteringTest(models.Model):
+    name = models.CharField(max_length=255)
+
+
+class SecondLevelModelForContextPassingTest(models.Model):
+    name = models.CharField(max_length=255)
+    third = models.ForeignKey(ThirdLevelModelForNestedFilteringTest, related_name="second", null=True)
+
+
+class TopLevelModelForContextPassingTest(models.Model):
+    second = models.ForeignKey(SecondLevelModelForContextPassingTest, related_name="top")
+    name = models.CharField(max_length=255)

@@ -105,6 +105,16 @@ Example:
         }
 
 
+Passing context to subserializers
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rationale: In DRF context is not passed to sub-serializers. So for example, in the standard serializer, you will have "request" in the context for the main object (say, Message), but the context for a sub-serializer (say, sender's Account) context will be empty. To workaround this you could for example re-initialize sub-serializers on the serializer's init, or instead of using a sub-serializer use a SerializerMethodField and initialize a sub-serializer inside it, etc. The problem is described here: https://github.com/encode/django-rest-framework/issues/2471
+
+Our serializers includes a mechanism to pass context to sub-serializers, workarounding the problem stated above.
+
+**WARNING: passing context may cause some unexpected behaviours, since sub-serializer will start receive the main context (and earlier they were not getting it).**
+
+
 Control over serialized fields
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -120,8 +130,35 @@ custom behaviour by overriding the followin method in the Serializer:
 
 .. code:: python
 
-    def get_fields_for_serialization(self, obj):
+    def get_fields_for_serialization(self, fields):  # fields must be in ("fields", "include_fields")
         return {"name", "id"}
+
+This works also with sub-serializers (using context-passing). Here is an example usage:
+
+.. code::
+
+    https://your.url?fields=some_field,other_field,nested_serializer__some_field,nested_serializer__other_field
+
+
+Making fields available only on demand
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rationale: it is a good practice to minimize the number of APIs, by making them as generic as possible. This however creates a performance problem when the amount of data being serialized grows by including sub-serializers (which can include sub-serializers themselves). Using control over serialized fields, as described above should be sufficient. However, in practice this mechanism will not be used as frequent as it should. That's why we've introduced another mechanism: on demand fields. Those are fields, specified in the serializer, that will be returned only if requested either by passing their name in "fields" (see the previous chapter) or in "include_fields" parameter.
+
+
+.. code:: python
+
+    class MySerializer(serializers.ModelSerializer):
+        some_subserializer = OtherSerializer()
+
+        class Meta:
+            model = MyModel
+            fields = ["some_property", "some_subserializer"]
+            on_demand_fields = ["some_subserializer"]
+
+.. code::
+
+    https://your.url?include_fields=some_subserializer
 
 
 Auto filtering and ordering

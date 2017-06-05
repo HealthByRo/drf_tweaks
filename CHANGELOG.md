@@ -1,5 +1,14 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.3.1] - 2017-06-05
+### Added
+- On demand fields.
+- Nested fields filtering.
+
+## [0.3.0] - 2017-06-02
+### Added
+- Context passing to subserializers. This may be a breaking change in some cases.
+
 ## [0.2.11] - 2017-05-24
 ### Added
 - Added unique fields to autofilter
