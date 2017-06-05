@@ -134,7 +134,10 @@ class SerializerCustomizationMixin(object):
         # ++ change to the original code from DRF
         only_fields = self.get_fields_for_serialization("fields")
         include_fields = self.get_fields_for_serialization("include_fields")
-        on_demand_fields = getattr(self.Meta, "on_demand_fields", set())
+        if hasattr(self, "Meta"):
+            on_demand_fields = getattr(self.Meta, "on_demand_fields", set())
+        else:
+            on_demand_fields = set()
         # -- change
 
         for field in fields:

@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.3.2] - 2017-06-05
+### Fixed
+- Serializer may not have meta
+
 ## [0.3.1] - 2017-06-05
 ### Added
 - On demand fields.
