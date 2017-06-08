@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.4.0] - 2017-06-08
+### Added
+- QueryCountingApiTestCase
+
 ## [0.3.2] - 2017-06-05
 ### Fixed
 - Serializer may not have meta
