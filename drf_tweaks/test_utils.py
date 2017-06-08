@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import warnings
-
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 from rest_framework.test import APIClient, APITestCase
 
+import warnings
 
 test_query_counter = 0
 

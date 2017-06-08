@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import warnings
 
-from django.urls import reverse_lazy
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.test import override_settings
+from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 
 from drf_tweaks import test_utils
@@ -34,15 +34,15 @@ class TestQueryCounter(APITestCase):
     def test_query_counting_client(self):
         client = test_utils.QueryCountingAPIClient()
         for method in ("get", "post", "put", "patch"):
-            getattr(client, method)(reverse_lazy("sample"))
+            getattr(client, method)(reverse("sample"))
             self.assertEqual(test_utils.test_query_counter, 1)
 
         # test sending warning
         with warnings.catch_warnings(record=True) as w:
             warnings.simplefilter("always")
-            client.post(reverse_lazy("calls", kwargs={"n": 3}))
+            client.post(reverse("calls", kwargs={"n": 3}))
             self.assertEqual(len(w), 1)
 
         # test raising error
         with self.assertRaises(Exception):
-            client.post(reverse_lazy("calls", kwargs={"n": 4}))
+            client.post(reverse("calls", kwargs={"n": 4}))
