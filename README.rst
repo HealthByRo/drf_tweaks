@@ -16,6 +16,7 @@ Current tweaks
 * `Pagination without counts`_
 * `Versioning extensions`_
 * `Autodocumentation`_ - extension for `Django Rest Swagger <https://github.com/marcgibbons/django-rest-swagger>`_
+* `Counting SQL queries in tests`_
 
 
 --------------
@@ -502,6 +503,33 @@ Custom class should inherit from AutodocBase:
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
             return ""  # your implementation goes`here
+            
+
+Counting SQL queries in tests
+-----------------------------
+
+Rationale
+~~~~~~~~~
+It is important to make sure your web application is efficient and can work well under high load. The ``drf_tweaks.test_utils.QueryCountingApiTestCase`` allows to have an eye on the SQL queries number. For each view it counts how many calls were executed, and if the number is high (configurable in settings), it shows suitable information (warning or exception).
+
+Usage & Configuration
+~~~~~~~~~~~~~~~~~~~~~
+
+.. code:: python
+
+    from django.urls import reverse_lazy
+    from drf_tweaks.test_utils import QueryCountingApiTestCase
+    
+    class TestFoo(QueryCountingApiTestCase):
+        def test_bar():
+            # In case there will be more SQL queries than configured in settings, an Exception or warning will be raised
+            self.client.post(reverse_lazy("some-post-url"))
+            # ...
+
+To configure, set in your settings:
+
+``TEST_QUERY_NUMBER_SHOW_WARNING=1  # default: 10``
+``TEST_QUERY_NUMBER_RAISE_ERROR=3  # default: 15``
 
 
 .. |travis| image:: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
