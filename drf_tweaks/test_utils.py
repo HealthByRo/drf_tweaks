@@ -5,6 +5,11 @@ from rest_framework.test import APIClient, APITestCase
 
 import warnings
 
+
+class TooManySQLQueriesException(Exception):
+    pass
+
+
 test_query_counter = 0
 
 
@@ -33,7 +38,7 @@ class query_counter(object):
             global test_query_counter
 
             if test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_RAISE_ERROR", 15):
-                raise Exception("Too many queries executed: %d" % test_query_counter)
+                raise TooManySQLQueriesException("Too many queries executed: %d" % test_query_counter)
             elif test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_SHOW_WARNING", 10):
                 warnings.warn("High number of queries executed: %d" % test_query_counter)
 

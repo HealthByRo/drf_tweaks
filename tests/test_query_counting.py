@@ -44,5 +44,5 @@ class TestQueryCounter(APITestCase):
             self.assertEqual(len(w), 1)
 
         # test raising error
-        with self.assertRaises(Exception):
+        with self.assertRaises(test_utils.TooManySQLQueriesException):
             client.post(reverse("calls", kwargs={"n": 4}))
