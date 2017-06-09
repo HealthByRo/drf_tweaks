@@ -212,7 +212,6 @@ class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
             "include_fields": "second_data__third_data__on_demand_field"
         })
         self.assertEqual(response.status_code, 200)
-        print(response.data)
         self.assertEqual(
             response.data, {
                 "name": "top",
