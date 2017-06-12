@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from copy import copy
 from rest_framework import serializers
 from rest_framework.fields import (api_settings, DjangoValidationError, empty, OrderedDict, set_value, SkipField,
                                    ValidationError)
@@ -19,14 +20,15 @@ class ContextPassing(object):
     def __init__(self, field, parent, only_fields, include_fields):
         self.field = field
         self.parent = parent
-        self.has_context = hasattr(field, "_context")
-        self.old_context = None
-        self.only_fields = self.filter_fields(field.field_name, only_fields)
-        self.include_fields = self.filter_fields(field.field_name, include_fields)
-        self.on_exit_delete_fields = False
-        self.on_exit_delete_include_fields = False
-        self.old_fields = None
-        self.old_include_fields = None
+        self.has_context = isinstance(field, serializers.Serializer)
+        if self.has_context:
+            self.old_context = None
+            self.only_fields = self.filter_fields(field.field_name, only_fields)
+            self.include_fields = self.filter_fields(field.field_name, include_fields)
+            self.on_exit_delete_fields = False
+            self.on_exit_delete_include_fields = False
+            self.old_fields = None
+            self.old_include_fields = None
 
     def __enter__(self):
         if self.has_context:
@@ -63,6 +65,18 @@ class ContextPassing(object):
 
             # restoring old context
             self.field._context = self.old_context
+
+
+def pass_context(field_name, context):
+    new_context = copy(context)
+    query_params = context["request"].query_params if "request" in context else {}
+    only_fields = set(context.get("fields", query_params.get("fields", "").split(",")))
+    include_fields = set(context.get("include_fields", query_params.get("include_fields", "").split(",")))
+
+    new_context["fields"] = ContextPassing.filter_fields(field_name, only_fields)
+    new_context["include_fields"] = ContextPassing.filter_fields(field_name, include_fields)
+
+    return new_context
 
 
 class SerializerCustomizationMixin(object):

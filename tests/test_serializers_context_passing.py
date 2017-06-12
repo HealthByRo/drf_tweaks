@@ -10,7 +10,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APIRequestFactory
 from rest_framework.test import APITestCase
 
-from drf_tweaks.serializers import ModelSerializer
+from drf_tweaks.serializers import ModelSerializer, pass_context
 from tests.models import (SecondLevelModelForContextPassingTest, TopLevelModelForContextPassingTest,
                           ThirdLevelModelForNestedFilteringTest)
 
@@ -72,14 +72,45 @@ class TopLevelSerializer(ModelSerializer):
         on_demand_fields = ["on_demand_field", "second_on_demand_field"]
 
 
+class SecondLevelV2Serializer(SecondLevelSerializer):
+    third_data = serializers.SerializerMethodField()
+
+    def get_third_data(self, obj):
+        return ThirdLevelSerializer(obj.third, context=pass_context("third_data", self.context)).data
+
+    class Meta:
+        model = SecondLevelModelForContextPassingTest
+        fields = ["name", "context_value", "on_demand_field", "third_data"]
+        on_demand_fields = ["on_demand_field", "third_data"]
+
+
+class TopLevelV2Serializer(TopLevelSerializer):
+    second_data = serializers.SerializerMethodField()
+
+    def get_second_data(self, obj):
+        return SecondLevelV2Serializer(obj.second, context=pass_context("second_data", self.context)).data
+
+    class Meta:
+        model = TopLevelModelForContextPassingTest
+        fields = ["name", "context_value", "second", "second_data", "on_demand_field", "second_on_demand_field"]
+        on_demand_fields = ["on_demand_field", "second_on_demand_field"]
+
+
 class SampleAPI(RetrieveUpdateAPIView):
     permission_classes = (AllowAny,)
     serializer_class = TopLevelSerializer
     queryset = TopLevelModelForContextPassingTest.objects.all()
 
 
+class SampleV2API(RetrieveUpdateAPIView):
+    permission_classes = (AllowAny,)
+    serializer_class = TopLevelV2Serializer
+    queryset = TopLevelModelForContextPassingTest.objects.all()
+
+
 urlpatterns = [
     url(r"^test-context-passing/(?P<pk>[\d]+)$", SampleAPI.as_view(), name="test-context-passing"),
+    url(r"^test-context-passing-v2/(?P<pk>[\d]+)$", SampleV2API.as_view(), name="test-context-passing-v2"),
 ]
 
 
@@ -126,9 +157,8 @@ class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
         self.second = SecondLevelModelForContextPassingTest.objects.create(name="second", third=self.third)
         self.top = TopLevelModelForContextPassingTest.objects.create(second=self.second, name="top")
 
-    def test_on_demand_field(self):
+    def inner_test_on_demand_field(self, cp_url):
         # w/o specifying on demand fields - fields are not included
-        cp_url = reverse("test-context-passing", kwargs={"pk": self.top.pk})
         response = self.client.get(cp_url)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(
@@ -223,3 +253,7 @@ class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
                 }
             }
         )
+
+    def test_on_demand_fields(self):
+        self.inner_test_on_demand_field(reverse("test-context-passing", kwargs={"pk": self.top.pk}))
+        self.inner_test_on_demand_field(reverse("test-context-passing-v2", kwargs={"pk": self.top.pk}))
