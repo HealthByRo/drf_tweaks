@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.4.1] - 2017-06-12
+### Added
+- pass_context method for filtering fields for Serializers used in SerializerMethodField
+
 ## [0.4.0] - 2017-06-08
 ### Added
 - QueryCountingApiTestCase

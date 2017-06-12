@@ -113,6 +113,19 @@ Rationale: In DRF context is not passed to sub-serializers. So for example, in t
 
 Our serializers includes a mechanism to pass context to sub-serializers, workarounding the problem stated above.
 
+If for any reason you are using SerializerMethodField with a Serializer inside, and you want to pass context, use pass_context method to filter the fields & include fields properly.
+
+.. code:: python
+
+    from drf_tweaks.serializers import pass_context
+
+    class SomeSerializer(Serializer):
+        some_field = serializers.SerializerMethodField()
+
+        def get_some_field(self, obj):
+            return OtherSerializer(obj, context=pass_context("some_field", self.context)).data
+
+
 **WARNING: passing context may cause some unexpected behaviours, since sub-serializer will start receive the main context (and earlier they were not getting it).**
 
 
@@ -503,7 +516,7 @@ Custom class should inherit from AutodocBase:
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
             return ""  # your implementation goes`here
-            
+
 
 Counting SQL queries in tests
 -----------------------------
@@ -519,7 +532,7 @@ Usage & Configuration
 
     from django.urls import reverse_lazy
     from drf_tweaks.test_utils import QueryCountingApiTestCase
-    
+
     class TestFoo(QueryCountingApiTestCase):
         def test_bar():
             # In case there will be more SQL queries than configured in settings, an Exception or warning will be raised
