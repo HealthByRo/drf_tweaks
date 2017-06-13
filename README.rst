@@ -16,6 +16,7 @@ Current tweaks
 * `Pagination without counts`_
 * `Versioning extensions`_
 * `Autodocumentation`_ - extension for `Django Rest Swagger <https://github.com/marcgibbons/django-rest-swagger>`_
+* `Autooptimization`_
 * `Counting SQL queries in tests`_
 
 
@@ -516,6 +517,12 @@ Custom class should inherit from AutodocBase:
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
             return ""  # your implementation goes`here
+
+
+Autooptimization
+----------------
+
+TODO
 
 
 Counting SQL queries in tests

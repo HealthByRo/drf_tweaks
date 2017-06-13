@@ -40,3 +40,21 @@ class SecondLevelModelForContextPassingTest(models.Model):
 class TopLevelModelForContextPassingTest(models.Model):
     second = models.ForeignKey(SecondLevelModelForContextPassingTest, related_name="top")
     name = models.CharField(max_length=255)
+
+
+class AutoOptimization3Model(models.Model):
+    name = models.CharField(max_length=255)
+    sample = models.ForeignKey(SampleModel)
+
+
+class AutoOptimization2Model(models.Model):
+    name = models.CharField(max_length=255)
+    fk_3_1 = models.ForeignKey(AutoOptimization3Model, related_name="reverse_2_1")
+    fk_3_2 = models.ForeignKey(AutoOptimization3Model, related_name="reverse_2_2")
+    sample = models.ForeignKey(SampleModel)
+
+
+class AutoOptimization1Model(models.Model):
+    name = models.CharField(max_length=255)
+    fk_2 = models.ForeignKey(AutoOptimization2Model, related_name="reverse_1")
+    sample = models.ManyToManyField(SampleModel)
