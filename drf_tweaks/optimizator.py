@@ -9,7 +9,6 @@ except ImportError:
     from django.db.models.fields import related as related_descriptors
 
 
-
 def check_if_related_object(model_field):
     if get_version() >= "1.9":
         if any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
