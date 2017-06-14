@@ -1,19 +1,35 @@
 # -*- coding: utf-8 -*-
-from django.db.models.fields.related_descriptors import (ForwardManyToOneDescriptor, ReverseManyToOneDescriptor,
-                                                         ReverseOneToOneDescriptor)
+from django import get_version
 from drf_tweaks.serializers import ContextPassing
 from rest_framework.serializers import ListSerializer, Serializer
 
+try:
+    from django.db.models.fields import related_descriptors
+except ImportError:
+    from django.db.models.fields import related as related_descriptors
+
+
 
 def check_if_related_object(model_field):
-    if any(isinstance(model_field, x) for x in (ForwardManyToOneDescriptor, ReverseOneToOneDescriptor)):
-        return True
+    if get_version() >= "1.9":
+        if any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
+                                                    related_descriptors.ReverseOneToOneDescriptor)):
+            return True
+    else:
+        print(model_field.__class__)
+        if any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
+                                                    related_descriptors.ReverseSingleRelatedObjectDescriptor)):
+            return True
     return False
 
 
 def check_if_prefetch_object(model_field):
-    if any(isinstance(model_field, x) for x in (ReverseManyToOneDescriptor,)):
-        return True
+    if get_version() >= "1.9":
+        if any(isinstance(model_field, x) for x in (related_descriptors.ReverseManyToOneDescriptor,)):
+            return True
+    else:
+        if any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,)):
+            return True
     return False
 
 
@@ -36,8 +52,8 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
             if "." not in field.source and hasattr(model_class, field.source):
                 model_field = getattr(model_class, field.source)
                 if check_if_prefetch_object(model_field):
-                    prefetch_related_set.add(f"{prefix}{field.source}")
-                    run_autooptimization_discovery(field.child, f"{prefix}{field.source}__", select_related_set,
+                    prefetch_related_set.add(prefix + field.source)
+                    run_autooptimization_discovery(field.child, prefix + field.source + "__", select_related_set,
                                                    prefetch_related_set, True,
                                                    filter_field_name(field_name, fields_to_serialize))
         elif isinstance(field, Serializer):
@@ -45,10 +61,10 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                 model_field = getattr(model_class, field.source)
                 if check_if_related_object(model_field):
                     if is_prefetch:
-                        prefetch_related_set.add(f"{prefix}{field.source}")
+                        prefetch_related_set.add(prefix + field.source)
                     else:
-                        select_related_set.add(f"{prefix}{field.source}")
-                    run_autooptimization_discovery(field, f"{prefix}{field.source}__", select_related_set,
+                        select_related_set.add(prefix + field.source)
+                    run_autooptimization_discovery(field, prefix + field.source + "__", select_related_set,
                                                    prefetch_related_set, is_prefetch,
                                                    filter_field_name(field_name, fields_to_serialize))
         elif "." in field.source:
@@ -56,7 +72,7 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
             if hasattr(model_class, field_name):
                 model_field = getattr(model_class, field_name)
                 if check_if_related_object(model_field):
-                    select_related_set.add(f"{prefix}{field_name}")
+                    select_related_set.add(prefix + field_name)
 
 
 def optimize():
