@@ -57,4 +57,4 @@ class AutoOptimization2Model(models.Model):
 class AutoOptimization1Model(models.Model):
     name = models.CharField(max_length=255)
     fk_2 = models.ForeignKey(AutoOptimization2Model, related_name="reverse_1")
-    sample = models.ManyToManyField(SampleModel)
+    sample_m2m = models.ManyToManyField(SampleModel)
