@@ -128,7 +128,16 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         self.assertIn("tests_autooptimization3model", query_stack[0][0])
 
     def test_select_related_with_filters(self):
-        pass  # TODO
+        response = self.client.get(reverse("simple-select-related"), {"fields": "name,fk_2_data,fk_2_data__name"})
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 27)
+        self.assertEqual(response.data[0]["name"], "m1")
+        self.assertEqual(response.data[0]["fk_2_data"]["name"], "m2")
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 1)
+        query_stack = test_utils.TestQueryCounter().get_queries_stack()
+        self.assertIn("tests_autooptimization1model", query_stack[0][0])
+        self.assertIn("tests_autooptimization2model", query_stack[0][0])
+        # self.assertNotIn("tests_autooptimization3model", query_stack[0][0])
 
     def test_prefetch_related(self):
         pass  # TODO
