@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import get_version
+from distutils.version import LooseVersion
 from drf_tweaks.serializers import ContextPassing
 from rest_framework.serializers import ListSerializer, Serializer
 
@@ -10,7 +11,7 @@ except ImportError:
 
 
 def check_if_related_object(model_field):
-    if get_version() >= "1.9":
+    if LooseVersion(get_version()) >= LooseVersion("1.9"):
         if any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
                                                     related_descriptors.ReverseOneToOneDescriptor)):
             return True
@@ -23,7 +24,7 @@ def check_if_related_object(model_field):
 
 
 def check_if_prefetch_object(model_field):
-    if get_version() >= "1.9":
+    if LooseVersion(get_version()) >= LooseVersion("1.9"):
         if any(isinstance(model_field, x) for x in (related_descriptors.ReverseManyToOneDescriptor,)):
             return True
     else:
