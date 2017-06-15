@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-from django import get_version
 from distutils.version import LooseVersion
+from django import get_version
 from drf_tweaks.serializers import ContextPassing
 from rest_framework.serializers import ListSerializer, Serializer
 
