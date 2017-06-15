@@ -3,6 +3,7 @@ from django.conf.urls import url
 from rest_framework.permissions import AllowAny
 from django.test import override_settings
 from drf_tweaks import serializers
+from rest_framework.serializers import CharField
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.reverse import reverse
 from drf_tweaks.optimizator import optimize
@@ -94,6 +95,15 @@ class PrefetchWithSelectRelatedSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "reverse_2_1", "reverse_2_2", "reverse_2_1_data", "reverse_2_2_data", "sample_data"]
 
 
+# simple serializer for select_related for the source
+class SelectRelatedBySourceSerializer(serializers.ModelSerializer):
+    fk_2_name = CharField(source="fk_2.name", read_only=True)
+
+    class Meta:
+        model = AutoOptimization1Model
+        fields = ["id", "name", "fk_2", "fk_2_name"]
+
+
 # APIs
 @optimize()
 class SimpleSelectRelatedAPI(ListAPIView):
@@ -119,12 +129,21 @@ class PrefetchWithSelectRelatedAPI(ListAPIView):
     serializer_class = PrefetchWithSelectRelatedSerializer
 
 
+@optimize()
+class SelectRelatedBySourceAPI(ListAPIView):
+    queryset = AutoOptimization1Model.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SelectRelatedBySourceSerializer
+
+
 urlpatterns = [
     url(r"^autooptimization/simple-select-related$", SimpleSelectRelatedAPI.as_view(), name="simple-select-related"),
     url(r"^autooptimization/simple-prefetch-related$", SimplePrefetchRelatedAPI.as_view(),
         name="simple-prefetch-related"),
     url(r"^autooptimization/prefetch-with-select-related$", PrefetchWithSelectRelatedAPI.as_view(),
         name="prefetch-with-select-related"),
+    url(r"^autooptimization/select-related-by-source$", SelectRelatedBySourceAPI.as_view(),
+        name="select-related-by-source"),
 ]
 
 
@@ -258,3 +277,15 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         # main objects list, reverse_2_1, reverse_2_2, reverse_2_1__sample, reverse_2_2__sample,
         # reverse_2_1__reverse_1, reverse_2_2__reverse_1, reverse_2_1__reverse_1__sample_m2m
         self.assertEqual(test_utils.TestQueryCounter().get_counter(), 8)
+
+    def select_related_by_source(self):
+        response = self.client.get(reverse("select-related-by-source"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 27)
+        self.assertEqual(response.data[0]["name"], "m1")
+        self.assertEqual(response.data[0]["fk_2_name"], "m2")
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 1)
+        query_stack = test_utils.TestQueryCounter().get_queries_stack()
+        self.assertIn("tests_autooptimization1model", query_stack[0][0])
+        self.assertIn("tests_autooptimization2model", query_stack[0][0])
+        self.assertNotIn("tests_autooptimization3model", query_stack[0][0])
