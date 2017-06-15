@@ -134,6 +134,26 @@ class SerializerCustomizationMixin(object):
             fields = set(self.context["request"].query_params[fields_name].split(","))
         return self.add_main_fields_names_from_nested(fields)
 
+    def get_only_fields_and_include_fields(self):
+        only_fields = self.get_fields_for_serialization("fields")
+        include_fields = self.get_fields_for_serialization("include_fields")
+
+        return only_fields, include_fields
+
+    def get_on_demand_fields(self):
+        if hasattr(self, "Meta"):
+            return getattr(self.Meta, "on_demand_fields", set())
+        return set()
+
+    def check_if_needs_serialization(self, field_name, fields, include_fields, on_demand_fields):
+        if fields:
+            # if fields are defined for a given level, we ignore "include_fields"
+            if field_name not in fields:
+                return False
+        elif field_name in on_demand_fields and field_name not in include_fields:
+            return False
+        return True
+
     def to_representation(self, instance):
         """Override of the default to_representation.
 
@@ -146,21 +166,13 @@ class SerializerCustomizationMixin(object):
         fields = self._readable_fields
 
         # ++ change to the original code from DRF
-        only_fields = self.get_fields_for_serialization("fields")
-        include_fields = self.get_fields_for_serialization("include_fields")
-        if hasattr(self, "Meta"):
-            on_demand_fields = getattr(self.Meta, "on_demand_fields", set())
-        else:
-            on_demand_fields = set()
+        only_fields, include_fields = self.get_only_fields_and_include_fields()
+        on_demand_fields = self.get_on_demand_fields()
         # -- change
 
         for field in fields:
             # ++ change to the original code from DRF
-            if only_fields:
-                # if fields are defined for a given level, we ignore "include_fields"
-                if field.field_name not in only_fields:
-                    continue
-            elif field.field_name in on_demand_fields and field.field_name not in include_fields:
+            if not self.check_if_needs_serialization(field.field_name, only_fields, include_fields, on_demand_fields):
                 continue
             # -- change
 

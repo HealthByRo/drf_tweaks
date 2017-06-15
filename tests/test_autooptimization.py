@@ -137,7 +137,7 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         query_stack = test_utils.TestQueryCounter().get_queries_stack()
         self.assertIn("tests_autooptimization1model", query_stack[0][0])
         self.assertIn("tests_autooptimization2model", query_stack[0][0])
-        # self.assertNotIn("tests_autooptimization3model", query_stack[0][0])
+        self.assertNotIn("tests_autooptimization3model", query_stack[0][0])
 
     def test_prefetch_related(self):
         pass  # TODO

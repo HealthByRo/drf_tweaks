@@ -16,7 +16,6 @@ def check_if_related_object(model_field):
                                                     related_descriptors.ReverseOneToOneDescriptor)):
             return True
     else:
-        print(model_field.__class__)
         if any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
                                                     related_descriptors.ReverseSingleRelatedObjectDescriptor)):
             return True
@@ -34,10 +33,15 @@ def check_if_prefetch_object(model_field):
 
 
 def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,
-                                   fields_to_serialize):
+                                   only_fields, include_fields):
     if not hasattr(serializer, "Meta") or not hasattr(serializer.Meta, "model"):
         return
     model_class = serializer.Meta.model
+
+    if hasattr(serializer, "get_on_demand_fields"):
+        on_demand_fields = serializer.get_on_demand_fields()
+    else:
+        on_demand_fields = set()
 
     def filter_field_name(field_name, fields_to_serialize):
         if fields_to_serialize is not None:
@@ -45,8 +49,9 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
         return None
 
     for field_name, field in serializer.fields.items():
-        if fields_to_serialize is not None and field_name not in fields_to_serialize:
-            continue
+        if hasattr(serializer, "check_if_needs_serialization"):
+            if not serializer.check_if_needs_serialization(field_name, only_fields, include_fields, on_demand_fields):
+                continue
 
         if isinstance(field, ListSerializer):
             if "." not in field.source and hasattr(model_class, field.source):
@@ -55,7 +60,8 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                     prefetch_related_set.add(prefix + field.source)
                     run_autooptimization_discovery(field.child, prefix + field.source + "__", select_related_set,
                                                    prefetch_related_set, True,
-                                                   filter_field_name(field_name, fields_to_serialize))
+                                                   filter_field_name(field_name, only_fields),
+                                                   filter_field_name(field_name, include_fields))
         elif isinstance(field, Serializer):
             if "." not in field.source and hasattr(model_class, field.source):
                 model_field = getattr(model_class, field.source)
@@ -66,7 +72,8 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                         select_related_set.add(prefix + field.source)
                     run_autooptimization_discovery(field, prefix + field.source + "__", select_related_set,
                                                    prefetch_related_set, is_prefetch,
-                                                   filter_field_name(field_name, fields_to_serialize))
+                                                   filter_field_name(field_name, only_fields),
+                                                   filter_field_name(field_name, include_fields))
         elif "." in field.source:
             field_name = field.source.split(".", 1)[0]
             if hasattr(model_class, field_name):
@@ -81,10 +88,18 @@ def optimize():
 
         def get_queryset(self):
             # discover select/prefetch related structure
-            serializer = self.get_serializer_class()()
+            serializer = self.get_serializer_class()(context=self.get_serializer_context())
+
+            if hasattr(serializer, "get_only_fields_and_include_fields"):
+                only_fields, include_fields = serializer.get_only_fields_and_include_fields()
+            else:
+                only_fields, include_fields = set(), set()
+
             select_related_set = set()
             prefetch_related_set = set()
-            run_autooptimization_discovery(serializer, "", select_related_set, prefetch_related_set, False, None)
+            run_autooptimization_discovery(
+                serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields
+            )
 
             # ammending queryset
             queryset = self._original_get_queryset()
