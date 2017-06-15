@@ -27,7 +27,8 @@ def check_if_prefetch_object(model_field):
         if any(isinstance(model_field, x) for x in (related_descriptors.ReverseManyToOneDescriptor,)):
             return True
     else:
-        if any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,)):
+        if any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
+                                                    related_descriptors.ForeignRelatedObjectsDescriptor)):
             return True
     return False
 

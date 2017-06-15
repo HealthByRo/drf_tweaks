@@ -20,7 +20,8 @@ class ContextPassing(object):
     def __init__(self, field, parent, only_fields, include_fields):
         self.field = field
         self.parent = parent
-        self.has_context = isinstance(field, serializers.Serializer)
+        self.is_many = isinstance(field, serializers.ListSerializer) and isinstance(field.child, serializers.Serializer)
+        self.has_context = isinstance(field, serializers.Serializer) or self.is_many
         if self.has_context:
             self.old_context = None
             self.only_fields = self.filter_fields(field.field_name, only_fields)
@@ -33,38 +34,45 @@ class ContextPassing(object):
     def __enter__(self):
         if self.has_context:
             # context passing
-            self.old_context = self.field._context
-            self.field._context = self.parent._context
+            if self.is_many:
+                self.old_context = self.field.child._context
+                self.field.child._context = self.parent._context
+            else:
+                self.old_context = self.field._context
+                self.field._context = self.parent._context
 
             # fields filtering
-            if "fields" in self.field._context:
-                self.old_fields = self.field._context["fields"]
+            if "fields" in self.parent._context:
+                self.old_fields = self.parent._context["fields"]
             else:
                 self.on_exit_delete_fields = True
-            self.field._context["fields"] = self.only_fields
+            self.parent._context["fields"] = self.only_fields
 
             # on demand fields
-            if "include_fields" in self.field._context:
-                self.old_include_fields = self.field._context["include_fields"]
+            if "include_fields" in self.parent._context:
+                self.old_include_fields = self.parent._context["include_fields"]
             else:
                 self.on_exit_delete_include_fields = True
-            self.field._context["include_fields"] = self.include_fields
+            self.parent._context["include_fields"] = self.include_fields
 
     def __exit__(self, type, value, traceback):
         if self.has_context:
             # modification was done on parent's context, so we roll them back before setting the old contexts
             if self.on_exit_delete_fields:
-                del self.field._context["fields"]
+                del self.parent._context["fields"]
             else:
-                self.field._context["fields"] = self.old_fields
+                self.parent._context["fields"] = self.old_fields
 
             if self.on_exit_delete_include_fields:
-                del self.field._context["include_fields"]
+                del self.parent._context["include_fields"]
             else:
-                self.field._context["include_fields"] = self.old_include_fields
+                self.parent._context["include_fields"] = self.old_include_fields
 
             # restoring old context
-            self.field._context = self.old_context
+            if self.is_many:
+                self.field.child._context = self.old_context
+            else:
+                self.field._context = self.old_context
 
 
 def pass_context(field_name, context):
