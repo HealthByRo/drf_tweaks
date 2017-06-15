@@ -278,7 +278,7 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         # reverse_2_1__reverse_1, reverse_2_2__reverse_1, reverse_2_1__reverse_1__sample_m2m
         self.assertEqual(test_utils.TestQueryCounter().get_counter(), 8)
 
-    def select_related_by_source(self):
+    def test_select_related_by_source(self):
         response = self.client.get(reverse("select-related-by-source"))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.data), 27)
