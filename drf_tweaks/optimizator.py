@@ -24,11 +24,13 @@ def check_if_related_object(model_field):
 
 def check_if_prefetch_object(model_field):
     if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        if any(isinstance(model_field, x) for x in (related_descriptors.ReverseManyToOneDescriptor,)):
+        if any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
+                                                    related_descriptors.ReverseManyToOneDescriptor,)):
             return True
     else:
         if any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
-                                                    related_descriptors.ForeignRelatedObjectsDescriptor)):
+                                                    related_descriptors.ForeignRelatedObjectsDescriptor,
+                                                    related_descriptors.ReverseManyRelatedObjectsDescriptor)):
             return True
     return False
 

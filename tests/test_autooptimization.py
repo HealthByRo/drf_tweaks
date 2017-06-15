@@ -60,13 +60,41 @@ class SimplePrefetchRelatedSerializer(serializers.ModelSerializer):
 
 
 # serializers for combining prefetch related with select related
-# TODO
+class SampleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SampleModel
+        fields = ["a", "b"]
+
+
+class PrefetchWithSelectRelated3Serializer(serializers.ModelSerializer):
+    sample_m2m_data = SampleSerializer(source="sample_m2m", read_only=True, many=True)
+
+    class Meta:
+        model = AutoOptimization1Model
+        fields = ["id", "name", "sample_m2m_data"]
+        on_demand_fields = ["sample_m2m_data"]
+
+
+class PrefetchWithSelectRelated2Serializer(serializers.ModelSerializer):
+    reverse_1_data = PrefetchWithSelectRelated3Serializer(source="reverse_1", read_only=True, many=True)
+    sample_data = SampleSerializer(source="sample", read_only=True)
+
+    class Meta:
+        model = AutoOptimization2Model
+        fields = ["id", "name", "reverse_1", "reverse_1_data", "sample_data"]
+
+
 class PrefetchWithSelectRelatedSerializer(serializers.ModelSerializer):
+    reverse_2_1_data = PrefetchWithSelectRelated2Serializer(source="reverse_2_1", read_only=True, many=True)
+    reverse_2_2_data = PrefetchWithSelectRelated2Serializer(source="reverse_2_2", read_only=True, many=True)
+    sample_data = SampleSerializer(source="sample", read_only=True)
+
     class Meta:
         model = AutoOptimization3Model
-        fields = ["id"]
+        fields = ["id", "name", "reverse_2_1", "reverse_2_2", "reverse_2_1_data", "reverse_2_2_data", "sample_data"]
 
 
+# APIs
 @optimize()
 class SimpleSelectRelatedAPI(ListAPIView):
     queryset = AutoOptimization1Model.objects.all()
@@ -186,7 +214,47 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         self.assertEqual(test_utils.TestQueryCounter().get_counter(), 3)
 
     def test_prefetch_with_select_related(self):
-        pass  # TODO
+        response = self.client.get(reverse("prefetch-with-select-related"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]["name"], "m3")
+        self.assertEqual(response.data[0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"][0]["reverse_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"][0]["name"], "m1")
+
+        # main objects list, reverse_2_1, reverse_2_2, reverse_2_1__sample, reverse_2_2__sample,
+        # reverse_2_1__reverse_1, reverse_2_2__reverse_1
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 7)
 
     def test_prefetch_with_select_related_with_include_fields(self):
-        pass  # TODO
+        response = self.client.get(reverse("prefetch-with-select-related"), {
+            "include_fields": "reverse_2_1_data__reverse_1_data__sample_m2m_data"
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]["name"], "m3")
+        self.assertEqual(response.data[0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"][0]["reverse_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"][0]["name"], "m1")
+
+        # main objects list, reverse_2_1, reverse_2_2, reverse_2_1__sample, reverse_2_2__sample,
+        # reverse_2_1__reverse_1, reverse_2_2__reverse_1, reverse_2_1__reverse_1__sample_m2m
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 8)
