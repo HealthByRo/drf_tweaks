@@ -35,7 +35,7 @@ class TestQueryCounter(APITestCase):
         client = test_utils.QueryCountingAPIClient()
         for method in ("get", "post", "put", "patch"):
             getattr(client, method)(reverse("sample"))
-            self.assertEqual(test_utils.test_query_counter, 1)
+            self.assertEqual(test_utils.TestQueryCounter().get_counter(), 1)
 
         # test sending warning
         with warnings.catch_warnings(record=True) as w:

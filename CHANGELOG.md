@@ -1,5 +1,15 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.5.0] - 2017-06-15
+### Added
+- auto-optimization of APIs
+
+### Fixed
+- context passing to subserializers using many=True
+
+### Changed
+- query counting in tests refactored
+
 ## [0.4.1] - 2017-06-12
 ### Added
 - pass_context method for filtering fields for Serializers used in SerializerMethodField

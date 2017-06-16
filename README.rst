@@ -16,6 +16,7 @@ Current tweaks
 * `Pagination without counts`_
 * `Versioning extensions`_
 * `Autodocumentation`_ - extension for `Django Rest Swagger <https://github.com/marcgibbons/django-rest-swagger>`_
+* `Autooptimization`_
 * `Counting SQL queries in tests`_
 
 
@@ -504,7 +505,7 @@ Adding custom classess
 
 Custom class should inherit from AutodocBase:
 
-.. code::
+.. code:: python
 
     class CustomAutodoc(AutodocBase):
         applies_to = ("get", "post", "put", "patch", "delete")
@@ -516,6 +517,22 @@ Custom class should inherit from AutodocBase:
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
             return ""  # your implementation goes`here
+
+
+Autooptimization
+----------------
+
+You can discover select related & prefetch related structure just by using @optimize decorator. It takes fields & include_fields parameters, so if the related object is not going to be serialized, it will not be queried.
+
+The structure is discovered based on serializer that is retrieved by get_serializer_class() with context obtained by get_serializer_context().
+
+.. code:: python
+
+    from drf_tweaks.optimizator import optimize
+
+    @optimize()
+    class MyAPI(ListCreateAPIView):
+        serializer_class = SerializerClassWithManyLevelsOfSubserializers
 
 
 Counting SQL queries in tests
