@@ -12,27 +12,21 @@ except ImportError:
 
 def check_if_related_object(model_field):
     if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        if any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
-                                                    related_descriptors.ReverseOneToOneDescriptor)):
-            return True
+        return any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
+                                                        related_descriptors.ReverseOneToOneDescriptor))
     else:
-        if any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
-                                                    related_descriptors.ReverseSingleRelatedObjectDescriptor)):
-            return True
-    return False
+        return any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
+                                                        related_descriptors.ReverseSingleRelatedObjectDescriptor))
 
 
 def check_if_prefetch_object(model_field):
     if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        if any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
-                                                    related_descriptors.ReverseManyToOneDescriptor,)):
-            return True
+        return any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
+                                                        related_descriptors.ReverseManyToOneDescriptor))
     else:
-        if any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
-                                                    related_descriptors.ForeignRelatedObjectsDescriptor,
-                                                    related_descriptors.ReverseManyRelatedObjectsDescriptor)):
-            return True
-    return False
+        return any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
+                                                        related_descriptors.ForeignRelatedObjectsDescriptor,
+                                                        related_descriptors.ReverseManyRelatedObjectsDescriptor))
 
 
 def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,
