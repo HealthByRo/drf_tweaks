@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.5.1] - 2017-06-19
+### Changed
+- auto-optimization is now a mixin, not a decorator
+
 ## [0.5.0] - 2017-06-15
 ### Added
 - auto-optimization of APIs

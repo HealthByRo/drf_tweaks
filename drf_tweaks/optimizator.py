@@ -79,33 +79,26 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                     select_related_set.add(prefix + field_name)
 
 
-def optimize():
-    def wrapped(cls):
-        cls._original_get_queryset = cls.get_queryset
+class AutoOptimeMixin(object):
+    def get_queryset(self):
+        # discover select/prefetch related structure
+        serializer = self.get_serializer_class()(context=self.get_serializer_context())
 
-        def get_queryset(self):
-            # discover select/prefetch related structure
-            serializer = self.get_serializer_class()(context=self.get_serializer_context())
+        if hasattr(serializer, "get_only_fields_and_include_fields"):
+            only_fields, include_fields = serializer.get_only_fields_and_include_fields()
+        else:
+            only_fields, include_fields = set(), set()
 
-            if hasattr(serializer, "get_only_fields_and_include_fields"):
-                only_fields, include_fields = serializer.get_only_fields_and_include_fields()
-            else:
-                only_fields, include_fields = set(), set()
+        select_related_set = set()
+        prefetch_related_set = set()
+        run_autooptimization_discovery(
+            serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields
+        )
 
-            select_related_set = set()
-            prefetch_related_set = set()
-            run_autooptimization_discovery(
-                serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields
-            )
-
-            # ammending queryset
-            queryset = self._original_get_queryset()
-            if select_related_set:
-                queryset = queryset.select_related(*list(select_related_set))
-            if prefetch_related_set:
-                queryset = queryset.prefetch_related(*list(prefetch_related_set))
-            return queryset
-        cls.get_queryset = get_queryset
-
-        return cls
-    return wrapped
+        # ammending queryset
+        queryset = super(AutoOptimeMixin, self).get_queryset()
+        if select_related_set:
+            queryset = queryset.select_related(*list(select_related_set))
+        if prefetch_related_set:
+            queryset = queryset.prefetch_related(*list(prefetch_related_set))
+        return queryset

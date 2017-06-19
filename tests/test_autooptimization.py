@@ -6,7 +6,7 @@ from drf_tweaks import serializers
 from rest_framework.serializers import CharField
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from rest_framework.reverse import reverse
-from drf_tweaks.optimizator import optimize
+from drf_tweaks.optimizator import AutoOptimeMixin
 from drf_tweaks import test_utils
 from tests.models import AutoOptimization1Model, AutoOptimization2Model, AutoOptimization3Model, SampleModel
 
@@ -105,15 +105,13 @@ class SelectRelatedBySourceSerializer(serializers.ModelSerializer):
 
 
 # APIs
-@optimize()
-class SimpleSelectRelatedAPI(ListAPIView):
+class SimpleSelectRelatedAPI(AutoOptimeMixin, ListAPIView):
     queryset = AutoOptimization1Model.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = SimpleSelectRelatedSerializer
 
 
-@optimize()
-class SimplePrefetchRelatedAPI(RetrieveAPIView):
+class SimplePrefetchRelatedAPI(AutoOptimeMixin, RetrieveAPIView):
     queryset = AutoOptimization3Model.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = SimplePrefetchRelatedSerializer
@@ -122,15 +120,13 @@ class SimplePrefetchRelatedAPI(RetrieveAPIView):
         return self.get_queryset().first()
 
 
-@optimize()
-class PrefetchWithSelectRelatedAPI(ListAPIView):
+class PrefetchWithSelectRelatedAPI(AutoOptimeMixin, ListAPIView):
     queryset = AutoOptimization3Model.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = PrefetchWithSelectRelatedSerializer
 
 
-@optimize()
-class SelectRelatedBySourceAPI(ListAPIView):
+class SelectRelatedBySourceAPI(AutoOptimeMixin, ListAPIView):
     queryset = AutoOptimization1Model.objects.all()
     permission_classes = (AllowAny,)
     serializer_class = SelectRelatedBySourceSerializer
