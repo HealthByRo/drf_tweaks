@@ -79,7 +79,7 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                     select_related_set.add(prefix + field_name)
 
 
-class AutoOptimeMixin(object):
+class AutoOptimizeMixin(object):
     def get_queryset(self):
         # discover select/prefetch related structure
         serializer = self.get_serializer_class()(context=self.get_serializer_context())
@@ -96,7 +96,7 @@ class AutoOptimeMixin(object):
         )
 
         # ammending queryset
-        queryset = super(AutoOptimeMixin, self).get_queryset()
+        queryset = super(AutoOptimizeMixin, self).get_queryset()
         if select_related_set:
             queryset = queryset.select_related(*list(select_related_set))
         if prefetch_related_set:

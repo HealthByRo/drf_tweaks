@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.5.2] - 2017-06-19
+### Fixed
+- typo
+
 ## [0.5.1] - 2017-06-19
 ### Changed
 - auto-optimization is now a mixin, not a decorator
