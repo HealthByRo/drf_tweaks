@@ -71,6 +71,21 @@ class SampleSerializerWithCustomErrors(Serializer):
     d = serializers.CharField(required=True)
 
 
+class SampleSerializerForReadonlyTest(ModelSerializer):
+    a = serializers.CharField()
+
+    class Meta:
+        model = SampleModel
+        fields = ["a", "b"]
+
+
+class SampleSerializerForReadonlyTest2(SampleSerializerForReadonlyTest):
+    class Meta:
+        model = SampleModel
+        fields = ["a", "b"]
+        read_only_fields = ["a", "b"]
+
+
 class SerializersTestCase(APITestCase):
     def setUp(self):
         self.sample1 = SampleModel.objects.create(a="a", b="b")
@@ -125,3 +140,15 @@ class SerializersTestCase(APITestCase):
         request = Request(factory.get("/", {"fields": "b,c"}))
         serializer = SampleModelSerializer(instance=self.sample1, context={"request": request})
         self.assertEqual(set(serializer.data.keys()), {"b"})
+
+    def test_enforcing_read_only_fields(self):
+        serializer = SampleSerializerForReadonlyTest(data={"a": "a", "b": "b"})
+        self.assertTrue(serializer.is_valid())
+
+        self.assertEqual(serializer.validated_data["a"], "a")
+        self.assertEqual(serializer.validated_data["b"], "b")
+
+        serializer = SampleSerializerForReadonlyTest2(data={"a": "a", "b": "b"})
+        self.assertTrue(serializer.is_valid())
+
+        self.assertEqual(len(serializer.validated_data), 0)
