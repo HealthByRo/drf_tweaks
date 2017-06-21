@@ -121,6 +121,10 @@ class SerializerCustomizationMixin(object):
             fields[f].allow_null = False
             fields[f].allow_blank = False
 
+        if hasattr(self, "Meta") and hasattr(self.Meta, "read_only_fields"):
+            for f in self.Meta.read_only_fields:
+                fields[f].read_only = True
+
         return fields
 
     @classmethod

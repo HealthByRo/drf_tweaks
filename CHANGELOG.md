@@ -1,5 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
+## [0.6.0] - 2017-06-21
+### Added
+- read_only_fields in Meta in Serializer now affects also explicitly defined fields in the serializer
+
 ## [0.5.2] - 2017-06-19
 ### Fixed
 - typo
