@@ -4,6 +4,7 @@ from django.db.backends.utils import CursorWrapper
 from rest_framework.test import APIClient, APITestCase
 
 import warnings
+import traceback
 
 
 class TooManySQLQueriesException(Exception):
@@ -19,10 +20,10 @@ class TestQueryCounter(object):
             TestQueryCounter.__instance.reset()
         return TestQueryCounter.__instance
 
-    def new_query(self, sql, params):
+    def new_query(self, sql, params, stack):
         if "SAVEPOINT" not in sql:
             self._counter += 1
-            self._queries_stack.append((sql, params))
+            self._queries_stack.append((sql, params, stack))
 
     def reset(self):
         self._counter = 0
@@ -36,7 +37,7 @@ class TestQueryCounter(object):
 
 
 def hacked_execute(self, sql, params=()):
-    TestQueryCounter().new_query(sql, params)
+    TestQueryCounter().new_query(sql, params, traceback.format_stack(limit=10)[:8])
     return self.old_execute(sql, params)
 
 
@@ -57,6 +58,13 @@ class query_counter(object):
             test_query_counter = TestQueryCounter().get_counter()
 
             if test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_RAISE_ERROR", 15):
+                if getattr(settings, "TEST_QUERY_NUMBER_PRINT_QUERIES", False):
+                    print("=================== Query Stack ===================")
+                    for query in TestQueryCounter().get_queries_stack():
+                        print(query[:2])
+                        print("".join(query[2]))
+                        print()
+                    print("===================================================")
                 raise TooManySQLQueriesException("Too many queries executed: %d" % test_query_counter)
             elif test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_SHOW_WARNING", 10):
                 warnings.warn("High number of queries executed: %d" % test_query_counter)

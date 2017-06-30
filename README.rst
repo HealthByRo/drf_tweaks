@@ -560,6 +560,9 @@ To configure, set in your settings, for example:
 
 ``TEST_QUERY_NUMBER_SHOW_WARNING = 1  # default: 10``
 ``TEST_QUERY_NUMBER_RAISE_ERROR = 3  # default: 15``
+``TEST_QUERY_NUMBER_PRINT_QUERIES = True  # default: False``
+
+If TEST_QUERY_NUMBER_PRINT_QUERIES is set to True, queries stack (with traceback) will be printed out.
 
 To override those settings in tests, use the ``django.test.override_settings`` decorator
 (check the `docs <https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.override_settings>`_).
