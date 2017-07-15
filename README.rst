@@ -522,16 +522,17 @@ Custom class should inherit from AutodocBase:
 Autooptimization
 ----------------
 
-You can discover select related & prefetch related structure just by using @optimize decorator. It takes fields & include_fields parameters, so if the related object is not going to be serialized, it will not be queried.
+You can discover select related & prefetch related structure just by using AutoOptimizeMixin mixin. It takes fields & include_fields parameters, so if the related object is not going to be serialized, it will not be queried.
 
 The structure is discovered based on serializer that is retrieved by get_serializer_class() with context obtained by get_serializer_context().
 
+The optimization discovery is run in get_queryset, and it obtains serializer_class thorugh get_serializer_class.
+
 .. code:: python
 
-    from drf_tweaks.optimizator import optimize
+    from drf_tweaks.optimizator import AutoOptimizeMixin
 
-    @optimize()
-    class MyAPI(ListCreateAPIView):
+    class MyAPI(AutoOptimizeMixin, ListCreateAPIView):
         serializer_class = SerializerClassWithManyLevelsOfSubserializers
 
 
@@ -540,6 +541,7 @@ Counting SQL queries in tests
 
 Rationale
 ~~~~~~~~~
+
 It is important to make sure your web application is efficient and can work well under high load. The ``drf_tweaks.test_utils.QueryCountingApiTestCase`` allows to have an eye on the SQL queries number. For each view it counts how many calls were executed, and if the number is high (configurable in settings), it shows suitable information (warning or exception).
 
 Usage & Configuration
