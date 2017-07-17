@@ -187,11 +187,7 @@ VERSIONING_GET = """<b>Limiting response fields</b>
 
 Versions lower or equal to 2 are <b>deprecated</b>
 
-Versions lower or equal to 1 are <b>obsolete</b>
----
-produces:
-\t- application/json; version=2
-\t- application/json; version=1"""
+Versions lower or equal to 1 are <b>obsolete</b>"""
 
 PAGINATION_GET = """Test
 

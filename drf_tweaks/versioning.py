@@ -3,6 +3,7 @@ from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework_swagger.renderers import OpenAPIRenderer
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -106,3 +107,11 @@ class DeprecationMiddleware(MiddlewareMixin):
             response["Warning"] = "299 - \"This Api Version is Deprecated\""
 
         return response
+
+
+class VersionedOpenAPIRenderer(OpenAPIRenderer):
+    def get_customizations(self):
+        data = super(VersionedOpenAPIRenderer, self).get_customizations()
+        content_type = getattr(settings, "API_DEFAULT_CONTENT_TYPE", "application/json")
+        data["produces"] = ["{}; version={}".format(content_type, v) for v in settings.API_VERSIONS_AVAILABLE]
+        return data

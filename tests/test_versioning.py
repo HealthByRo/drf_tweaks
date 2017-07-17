@@ -11,7 +11,7 @@ from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_tweaks.versioning import ApiVersionMixin
+from drf_tweaks.versioning import ApiVersionMixin, VersionedOpenAPIRenderer
 from tests.models import SampleModel
 
 
@@ -155,3 +155,10 @@ class VersioningApiTestCase(APITestCase):
         response = self.client.get(reverse("sample_api", kwargs={"pk": self.sample1.pk}),
                                    HTTP_ACCEPT="application/json; version=5")
         self.assertEqual(response.status_code, 400)
+
+    @override_settings(API_VERSIONS_AVAILABLE=["1", "2", "3"])
+    def test_versioned_openapi_renderer(self):
+        renderer = VersionedOpenAPIRenderer()
+        extra = renderer.get_customizations()
+        self.assertListEqual(
+            extra["produces"], ["application/json; version={}".format(v) for v in ["1", "2", "3"]])

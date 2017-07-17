@@ -113,12 +113,6 @@ class VersioningAutodoc(AutodocBase):
 
     @classmethod
     def _generate_yaml(cls, documented_cls, method_name):
-        versions = []
-        if hasattr(documented_cls, "versioning_serializer_classess"):
-            for version in sorted(documented_cls.versioning_serializer_classess.keys(), reverse=True):
-                versions.append("\t- application/json; version=%d" % version)
-        if versions:
-            return "produces:\n" + "\n".join(versions)
         return ""
 
     @classmethod
