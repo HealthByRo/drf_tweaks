@@ -1,6 +1,10 @@
 from django.conf import settings
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import AllowAny, BasePermission
+from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
+from rest_framework.views import APIView
+
+from drf_tweaks.versioning import VersionedOpenAPIRenderer
 
 
 class SwaggerAdminPermission(BasePermission):
@@ -34,3 +38,26 @@ class SwaggerSchemaGenerator(SchemaGenerator):
             view.get_serializer = lambda: view.get_serializer_class()
 
         return super(SwaggerSchemaGenerator, self).get_serializer_fields(path, method, view)
+
+
+def get_swagger_schema_api_view(permissions=None, renderers=None):
+    if not permissions:
+        permissions= [AllowAny, SwaggerAdminPermission]
+
+    if not renderers:
+        renderers = [VersionedOpenAPIRenderer]
+
+    class SwaggerSchemaView(APIView):
+        permission_classes = permissions
+        _ignore_model_permissions = True
+        exclude_from_schema = True
+        renderer_classes = renderers
+
+        def get(self, request):
+            generator = SwaggerSchemaGenerator()
+            # disable versioning when schema is being generated
+            request.version = None
+            schema = generator.get_schema(request=request)
+            return Response(schema)
+
+    return SwaggerSchemaView
