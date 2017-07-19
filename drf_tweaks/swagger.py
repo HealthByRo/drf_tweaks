@@ -1,4 +1,14 @@
+from django.conf import settings
+from rest_framework.permissions import BasePermission
 from rest_framework.schemas import SchemaGenerator
+
+
+class SwaggerAdminPermission(BasePermission):
+    def has_permission(self, request, view):
+        swagger_settings = getattr(settings, "SWAGGER_SETTINGS", None)
+        if swagger_settings and swagger_settings.get("IS_SUPERUSER") and not request.user.is_superuser:
+            return False
+        return True
 
 
 class SwaggerSchemaGenerator(SchemaGenerator):
