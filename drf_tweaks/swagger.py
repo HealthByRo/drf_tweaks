@@ -42,7 +42,7 @@ class SwaggerSchemaGenerator(SchemaGenerator):
 
 def get_swagger_schema_api_view(permissions=None, renderers=None):
     if not permissions:
-        permissions= [AllowAny, SwaggerAdminPermission]
+        permissions = [AllowAny, SwaggerAdminPermission]
 
     if not renderers:
         renderers = [VersionedOpenAPIRenderer]
