@@ -60,4 +60,4 @@ def get_swagger_schema_api_view(permissions=None, renderers=None):
             schema = generator.get_schema(request=request)
             return Response(schema)
 
-    return SwaggerSchemaView
+    return SwaggerSchemaView.as_view()
