@@ -431,7 +431,7 @@ Classess are applied in the same order they are defined.
 BaseInfo
 ********
 
-This one is adding basic info (the one passed to the decorator itself), as well as custom text or yaml if defined,
+This one is adding basic info (the one passed to the decorator itself), also custom text, if defined,
 as in following examples:
 
 .. code:: python
@@ -442,10 +442,6 @@ as in following examples:
         @classmethod
         def get_custom_get_doc(cls):
             return "custom get doc"
-
-        @classmethod
-        def get_custom_patch_doc_yaml(cls):
-            return "some yaml"
 
 
 Pagination
@@ -508,10 +504,6 @@ Custom class should inherit from AutodocBase:
 
     class CustomAutodoc(AutodocBase):
         applies_to = ("get", "post", "put", "patch", "delete")
-
-        @classmethod
-        def _generate_yaml(cls, documented_cls, method_name):
-            return ""  # your implementation goes here
 
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
