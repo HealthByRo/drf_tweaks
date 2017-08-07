@@ -1,6 +1,6 @@
 from django.conf import settings
 from drf_tweaks.versioning import VersionedOpenAPIRenderer
-from rest_framework.permissions import AllowAny, BasePermission
+from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 from rest_framework.schemas import SchemaGenerator
 from rest_framework.views import APIView
@@ -41,7 +41,7 @@ class SwaggerSchemaGenerator(SchemaGenerator):
 
 def get_swagger_schema_api_view(permissions=None, renderers=None):
     if not permissions:
-        permissions = [AllowAny, SwaggerAdminPermission]
+        permissions = [SwaggerAdminPermission]
 
     if not renderers:
         renderers = [VersionedOpenAPIRenderer]
