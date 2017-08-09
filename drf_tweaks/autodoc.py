@@ -170,6 +170,32 @@ class OrderingAndFilteringAutodoc(AutodocBase):
         return text
 
 
+class OnDemandFieldsAutodoc(AutodocBase):
+    @classmethod
+    def _generate_yaml(cls, documented_cls, method_name):
+        return ""
+
+    @classmethod
+    def _generate_text(cls, documented_cls, method_name):
+        serializer = getattr(documented_cls, "serializer_class", None)
+        if not serializer:
+            return ""
+
+        try:
+            on_demand_fields = serializer.Meta.on_demand_fields
+        except AttributeError:
+            on_demand_fields = set()
+
+        if not on_demand_fields:
+            return ""
+
+        on_demand_fields = sorted(on_demand_fields)
+        text = "\n\n<b>Access to on demand fields</b>\n\n\tavailable fields: "
+        text += "{}\n\n".format(", ".join(on_demand_fields))
+        text += "\n".join(["{} -- optional".format(field) for field in on_demand_fields])
+        return text
+
+
 class BaseInfoAutodoc(AutodocBase):
     """ insert the base docstring to each method - this will be displayed on the swagger folded list """
     @classmethod
@@ -201,7 +227,7 @@ if hasattr(settings, "AUTODOC_DEFAULT_CLASSESS"):
     DEFAULT_CLASSESS = [import_from_string(x, "") for x in settings.AUTODOC_DEFAULT_CLASSESS]
 else:
     DEFAULT_CLASSESS = (BaseInfoAutodoc, PermissionsAutodoc, OrderingAndFilteringAutodoc, PaginationAutodoc,
-                        VersioningAutodoc)
+                        VersioningAutodoc, OnDemandFieldsAutodoc)
 
 
 def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
