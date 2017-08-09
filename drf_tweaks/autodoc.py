@@ -129,10 +129,6 @@ class OrderingAndFilteringAutodoc(AutodocBase):
 
 class OnDemandFieldsAutodoc(AutodocBase):
     @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        return ""
-
-    @classmethod
     def _generate_text(cls, documented_cls, method_name):
         serializer = getattr(documented_cls, "serializer_class", None)
         if not serializer:
