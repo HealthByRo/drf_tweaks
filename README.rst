@@ -431,7 +431,7 @@ Classess are applied in the same order they are defined.
 BaseInfo
 ********
 
-This one is adding basic info (the one passed to the decorator itself), as well as custom text or yaml if defined,
+This one is adding basic info (the one passed to the decorator itself), also custom text, if defined,
 as in following examples:
 
 .. code:: python
@@ -442,10 +442,6 @@ as in following examples:
         @classmethod
         def get_custom_get_doc(cls):
             return "custom get doc"
-
-        @classmethod
-        def get_custom_patch_doc_yaml(cls):
-            return "some yaml"
 
 
 Pagination
@@ -491,8 +487,7 @@ Versioning
 **********
 
 Autodoc for versioning - applied only when ApiVersionMixin is present and the decorated class is using
-rest_framework.versioning.AcceptHeaderVersioning and has versioning_serializer_classess defined. It adds all available
-versions to a swagger, so you can make a call from it using different API versions.
+rest_framework.versioning.AcceptHeaderVersioning and has versioning_serializer_classess defined.
 
 Permissions
 ***********
@@ -509,10 +504,6 @@ Custom class should inherit from AutodocBase:
 
     class CustomAutodoc(AutodocBase):
         applies_to = ("get", "post", "put", "patch", "delete")
-
-        @classmethod
-        def _generate_yaml(cls, documented_cls, method_name):
-            return ""  # your implementation goes here
 
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
@@ -568,6 +559,14 @@ If TEST_QUERY_NUMBER_PRINT_QUERIES is set to True, queries stack (with traceback
 
 To override those settings in tests, use the ``django.test.override_settings`` decorator
 (check the `docs <https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.override_settings>`_).
+
+Versioning in Swagger
+---------------------
+
+Usage & Configuration
+~~~~~~~~~~~~~~~~~~~~~
+To enable selecting version in `Swagger <http://swagger.io>`_, use the
+``drf_tweaks.versioning.VersionedOpenAPIRenderer`` instead of the default OpenAPI renderer in your schema view.
 
 
 .. |travis| image:: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master

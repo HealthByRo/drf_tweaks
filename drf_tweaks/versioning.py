@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
+from coreapi.compat import force_bytes, force_text
 from django.conf import settings
 from django.utils.translation import ugettext_lazy as _
 from rest_framework import status
 from rest_framework.exceptions import APIException
+from rest_framework.renderers import JSONRenderer
+from rest_framework.schemas import EndpointInspector
+from rest_framework_swagger.renderers import OpenAPICodec, OpenAPIRenderer
+
+import json
+import six
 
 try:
     from django.utils.deprecation import MiddlewareMixin
@@ -106,3 +113,48 @@ class DeprecationMiddleware(MiddlewareMixin):
             response["Warning"] = "299 - \"This Api Version is Deprecated\""
 
         return response
+
+
+class VersionedOpenAPICodec(OpenAPICodec):
+    def get_path_customizations(self):
+        data = {}
+        endpoints = EndpointInspector().get_api_endpoints()
+        for endpoint in endpoints:
+            # replace {pk} with {id}, as rest framework does in schema generation
+            path = endpoint[0].replace("{pk}", "{id}")
+            view = endpoint[2]
+            view_cls = getattr(view, "cls", None)
+            if not view_cls:
+                continue
+
+            versioning_classes = getattr(view_cls, "versioning_serializer_classess", None)
+            if not versioning_classes:
+                continue
+
+            content_type = getattr(settings, "API_DEFAULT_CONTENT_TYPE", "application/json")
+            accept_headers = [
+                "{}; version={}".format(content_type, v) for v in sorted(versioning_classes.keys(), reverse=True)
+            ]
+            data[path] = {"produces": accept_headers}
+
+        return data
+
+    def encode(self, document, extra=None, **options):
+        result = super(VersionedOpenAPICodec, self).encode(document, extra, **options)
+        data = json.loads(force_text(result))
+
+        for path, path_data in six.iteritems(self.get_path_customizations()):
+            if path in data["paths"]:
+                for method in data["paths"][path].keys():
+                    data["paths"][path][method].update(path_data)
+
+        return force_bytes(json.dumps(data))
+
+
+class VersionedOpenAPIRenderer(OpenAPIRenderer):
+    def render(self, data, accepted_media_type=None, renderer_context=None):
+        if renderer_context["response"].status_code != status.HTTP_200_OK:
+            return JSONRenderer().render(data)
+
+        extra = self.get_customizations()
+        return VersionedOpenAPICodec().encode(data, extra=extra)
