@@ -137,7 +137,7 @@ class OnDemandFieldsAutodoc(AutodocBase):
         try:
             on_demand_fields = serializer.Meta.on_demand_fields
         except AttributeError:
-            on_demand_fields = set()
+            return ""
 
         if not on_demand_fields:
             return ""
