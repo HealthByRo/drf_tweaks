@@ -283,10 +283,7 @@ FILTER_SORTING_GET = """Test
 
 ON_DEMAND_GET = """<b>Access to on demand fields</b>
 
-\tavailable fields: b, on_demand_field
-
-b -- optional
-on_demand_field -- optional"""
+\tavailable fields: b, on_demand_field"""
 
 
 class AutodocTestCase(APITestCase):

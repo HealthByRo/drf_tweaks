@@ -192,7 +192,6 @@ class OnDemandFieldsAutodoc(AutodocBase):
         on_demand_fields = sorted(on_demand_fields)
         text = "\n\n<b>Access to on demand fields</b>\n\n\tavailable fields: "
         text += "{}\n\n".format(", ".join(on_demand_fields))
-        text += "\n".join(["{} -- optional".format(field) for field in on_demand_fields])
         return text
 
 
