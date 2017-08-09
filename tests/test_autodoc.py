@@ -10,11 +10,12 @@ from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_tweaks.autodoc import autodoc, BaseInfoAutodoc, PaginationAutodoc, PermissionsAutodoc
+from drf_tweaks.autodoc import autodoc, BaseInfoAutodoc, OnDemandFieldsAutodoc, PaginationAutodoc, PermissionsAutodoc
 from drf_tweaks.autofilter import autofilter
 from drf_tweaks.pagination import NoCountsLimitOffsetPagination
+from drf_tweaks.serializers import ModelSerializer
 from drf_tweaks.versioning import ApiVersionMixin
-from tests.models import SampleModelForAutofilter
+from tests.models import SampleModel, SampleModelForAutofilter
 
 
 # sample serializers
@@ -26,6 +27,18 @@ class SampleModelForAutofilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleModelForAutofilter
         fields = ["id", "fk", "non_indexed_fk", "indexed_int", "non_indexed_int", "indexed_char", "non_indexed_char"]
+
+
+class SampleOnDemandFieldsSerializer(ModelSerializer):
+    on_demand_field = serializers.SerializerMethodField()
+
+    def get_on_demand_field(self, obj):
+        return "on_demand"
+
+    class Meta:
+        model = SampleModel
+        fields = ["a"]
+        on_demand_fields = ["b", "on_demand_field"]
 
 
 class NoDocAllowAny(AllowAny):
@@ -127,6 +140,13 @@ class SampleAutofilterApiV3(ListAPIView):
     filter_fields = ("id", "fk")
     ordering_fields = ("id", "fk")
     pagination_class = None
+
+
+@autodoc(classess=(OnDemandFieldsAutodoc,))
+class SampleOnDemandAutodocApi(ListAPIView):
+    queryset = SampleModel.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = SampleOnDemandFieldsSerializer
 
 
 # expected docstrings
@@ -239,6 +259,11 @@ FILTER_SORTING_GET = """Test
 \tid: exact"""
 
 
+ON_DEMAND_GET = """<b>Access to on demand fields</b>
+
+\tavailable fields: b, on_demand_field"""
+
+
 class AutodocTestCase(APITestCase):
     def test_base_info_only(self):
         self.assertEqual(SampleNotVersionedApi.get.__doc__, BASE_INFO_WITH_PERMISSIONS)
@@ -264,3 +289,6 @@ class AutodocTestCase(APITestCase):
 
     def test_autodoc_for_filter_and_order(self):
         self.assertEqual(SampleAutofilterApiV3.get.__doc__, FILTER_SORTING_GET)
+
+    def test_autodoc_for_on_demand_fields(self):
+        self.assertEqual(SampleOnDemandAutodocApi.get.__doc__, ON_DEMAND_GET)
