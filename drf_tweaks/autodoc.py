@@ -27,40 +27,19 @@ class AutodocBase(object):
     applies_to = ("get", "post", "put", "patch", "delete")
 
     @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        raise NotImplementedError
-
-    @classmethod
     def _generate_text(cls, documented_cls, method_name):
         """ text that will be appended to the result """
         raise NotImplementedError
 
     @classmethod
-    def _get_text_and_yaml(cls, docstring):
-        if not docstring:
-            docstring = ""
-
-        if "---" in docstring:
-            text, yaml = docstring.split("---")
-        else:
-            text, yaml = docstring, ""
-        return text.strip(), yaml.strip()
-
-    @classmethod
-    def _format_docstring(cls, text, yaml):
-        text = text.strip()
-        yaml = yaml.strip()
-        result = text
-        if yaml:
-            result += "\n---\n" + yaml
-        return result
+    def _format_docstring(cls, text):
+        return text.strip()
 
     @classmethod
     def update_docstring(cls, documented_cls, base_doc, docstring, method_name):
-        text, yaml = cls._get_text_and_yaml(docstring)
+        text = docstring.strip() if docstring else ""
         text += "\n\n" + cls._generate_text(documented_cls, method_name)
-        yaml += "\n\n" + cls._generate_yaml(documented_cls, method_name)
-        return cls._format_docstring(text, yaml)
+        return cls._format_docstring(text)
 
 
 class PaginationAutodoc(AutodocBase):
@@ -68,10 +47,6 @@ class PaginationAutodoc(AutodocBase):
         default, so to avoid having pagination params in retrieve-type generics, you have to explicitly put there
         pagination_class = None """
     applies_to = ("get", )
-
-    @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        return ""
 
     @classmethod
     def _generate_text(cls, documented_cls, method_name):
@@ -91,10 +66,6 @@ class PermissionsAutodoc(AutodocBase):
     applies_to = ("get", "post", "put", "patch", "delete")
 
     @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        return ""
-
-    @classmethod
     def _generate_text(cls, documented_cls, method_name):
         text = ""
         if hasattr(documented_cls, "permission_classes") and documented_cls.permission_classes:
@@ -112,16 +83,6 @@ class VersioningAutodoc(AutodocBase):
     applies_to = ("get", "post", "put", "patch")
 
     @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        versions = []
-        if hasattr(documented_cls, "versioning_serializer_classess"):
-            for version in sorted(documented_cls.versioning_serializer_classess.keys(), reverse=True):
-                versions.append("\t- application/json; version=%d" % version)
-        if versions:
-            return "produces:\n" + "\n".join(versions)
-        return ""
-
-    @classmethod
     def _generate_text(cls, documented_cls, method_name):
         text = ""
         if hasattr(documented_cls, "get_deprecated_and_obsolete_versions"):
@@ -136,10 +97,6 @@ class VersioningAutodoc(AutodocBase):
 class OrderingAndFilteringAutodoc(AutodocBase):
     """ Adding ordering & filtering informations """
     applies_to = ("get", )
-
-    @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        return ""
 
     @classmethod
     def _generate_text(cls, documented_cls, method_name):
@@ -198,13 +155,6 @@ class OnDemandFieldsAutodoc(AutodocBase):
 class BaseInfoAutodoc(AutodocBase):
     """ insert the base docstring to each method - this will be displayed on the swagger folded list """
     @classmethod
-    def _generate_yaml(cls, documented_cls, method_name):
-        if hasattr(documented_cls, "get_custom_%s_doc_yaml" % method_name):
-            return getattr(documented_cls, "get_custom_%s_doc_yaml" % method_name)()
-        else:
-            return ""
-
-    @classmethod
     def _generate_text(cls, documented_cls, method_name):
         if hasattr(documented_cls, "get_custom_%s_doc" % method_name):
             return getattr(documented_cls, "get_custom_%s_doc" % method_name)()
@@ -213,13 +163,12 @@ class BaseInfoAutodoc(AutodocBase):
 
     @classmethod
     def update_docstring(cls, documented_cls, base_doc, docstring, method_name):
-        text, yaml = cls._get_text_and_yaml(docstring)
+        text = docstring.strip() if docstring else ""
         if not base_doc:
             base_doc = ""
 
         text = base_doc + "\n\n" + text + "\n\n" + cls._generate_text(documented_cls, method_name)
-        yaml += "\n\n" + cls._generate_yaml(documented_cls, method_name)
-        return cls._format_docstring(text, yaml)
+        return cls._format_docstring(text)
 
 
 if hasattr(settings, "AUTODOC_DEFAULT_CLASSESS"):

@@ -77,30 +77,20 @@ class SampleVersionedApiT1(SampleVersionedApi):
     permission_classes = (NoDocAllowAny,)
 
     def put(self, *args, **kwargs):
-        """ some description
-        ---
-        some yaml"""
+        """ some description"""
         pass
 
     def get(self, *args, **kwargs):
-        """ some description
-        ---
-        some yaml"""
+        """ some description"""
         pass
 
     def patch(self, *args, **kwargs):
-        """ some description
-        ---
-        some yaml"""
+        """ some description"""
         pass
 
     @classmethod
     def get_custom_get_doc(cls):
         return "custom doc"
-
-    @classmethod
-    def get_custom_patch_doc_yaml(cls):
-        return "custom yaml"
 
 
 @autodoc(skip_classess=(PaginationAutodoc, PermissionsAutodoc))
@@ -178,25 +168,17 @@ BASE_INFO_WITH_PERMISSIONS = """Test
 
 BASE_INFO_WITH_DOCSTRING_PUT = """Test
 
-some description
----
-some yaml"""
+some description"""
 
 BASE_INFO_WITH_DOCSTRING_AND_CUSTOM_GET = """Test
 
 some description
 
-custom doc
----
-some yaml"""
+custom doc"""
 
 BASE_INFO_WITH_DOCSTRING_AND_CUSTOM_PATCH = """Test
 
-some description
----
-some yaml
-
-custom yaml"""
+some description"""
 
 VERSIONING_GET = """<b>Limiting response fields</b>
 
@@ -207,11 +189,7 @@ VERSIONING_GET = """<b>Limiting response fields</b>
 
 Versions lower or equal to 2 are <b>deprecated</b>
 
-Versions lower or equal to 1 are <b>obsolete</b>
----
-produces:
-\t- application/json; version=2
-\t- application/json; version=1"""
+Versions lower or equal to 1 are <b>obsolete</b>"""
 
 PAGINATION_GET = """Test
 
