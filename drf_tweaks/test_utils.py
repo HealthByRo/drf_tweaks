@@ -3,6 +3,7 @@ from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 from rest_framework.test import APIClient, APITestCase
 
+import re
 import traceback
 import warnings
 
@@ -21,9 +22,12 @@ class TestQueryCounter(object):
         return TestQueryCounter.__instance
 
     def new_query(self, sql, params, stack):
-        if "SAVEPOINT" not in sql:
-            self._counter += 1
-            self._queries_stack.append((sql, params, stack))
+        for pattern in getattr(settings, "TEST_QUERY_COUNTER_IGNORE_PATTERNS", [".*SAVEPOINT.*"]):
+            if re.match(pattern, sql):
+                return
+
+        self._counter += 1
+        self._queries_stack.append((sql, params, stack))
 
     def reset(self):
         self._counter = 0

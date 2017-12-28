@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.6.2] - 2017-06-30
+### Added
+- possibility to not count some queries base on patterns
+
 ## [0.6.1] - 2017-06-30
 ### Added
 - possibility to print queries on TooManySQLQueriesException

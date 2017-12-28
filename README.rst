@@ -554,8 +554,11 @@ To configure, set in your settings, for example:
 ``TEST_QUERY_NUMBER_SHOW_WARNING = 1  # default: 10``
 ``TEST_QUERY_NUMBER_RAISE_ERROR = 3  # default: 15``
 ``TEST_QUERY_NUMBER_PRINT_QUERIES = True  # default: False``
+``TEST_QUERY_COUNTER_IGNORE_PATTERNS = [".*SAVEPOINT.*", ".*constance_config.*"]  # default [".*SAVEPOINT.*"]``
 
 If TEST_QUERY_NUMBER_PRINT_QUERIES is set to True, queries stack (with traceback) will be printed out.
+
+Queries that matches any pattern from TEST_QUERY_COUNTER_IGNORE_PATTERNS will not be counted.
 
 To override those settings in tests, use the ``django.test.override_settings`` decorator
 (check the `docs <https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.override_settings>`_).
