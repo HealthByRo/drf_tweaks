@@ -1,9 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
-## [0.6.4] - 2018-02-15
+## [0.7.0] - 2018-02-15
 ### Added
 - support for Django 2.0
+### Removed
+- support for Django <1.11
 
 ## [0.6.3] - 2017-06-30
 ### Fixed
