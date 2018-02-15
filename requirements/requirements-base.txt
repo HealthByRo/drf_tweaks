@@ -1,4 +1,4 @@
 six>=1.10
-djangorestframework>=3.6.3,<3.7
+djangorestframework>=3.7.0
 django-rest-swagger>0.3.9,<2.0.0
-django-filter>=1.0.1
+django-filter>=1.1.0
