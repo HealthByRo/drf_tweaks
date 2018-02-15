@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.6.4] - 2018-02-15
+### Added
+- support for Django 2.0
+
 ## [0.6.3] - 2017-06-30
 ### Fixed
 - swagger update reverted

@@ -303,13 +303,6 @@ In order to make deprecation warning work, you need to add DeprecationMiddleware
         "drf_tweaks.versioning.DeprecationMiddleware"
     )
 
-    # django < 1.10
-    MIDDLEWARE_CLASSES (
-        ...
-        "drf_tweaks.versioning.DeprecationMiddleware"
-    )
-
-
 It is highly recommended to add DEFAULT_VERSION along with DEFAUlt_VERSIONINg_CLASS to DRF settings:
 
 .. code:: python
