@@ -202,7 +202,7 @@ Usage
         serializer_class = SomeModelSerializer
 
     # you can add some extra fields to sort or filter
-    @autofilter(extra_filter=("non_indexed_field", ), extra_ordering=("non_indexed_field", ))
+    @autofilter(extra_filter=("non_indexed_field", ), extra_ordering=("non_indexed_field", ), exclude_fields=("some_field", ))
     class SomeAPI(...):
         serializer_class = SomeModelSerializer
         ordering_fields = ("other_non_indexed_field", )

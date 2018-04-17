@@ -6,7 +6,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters
 
 
-def autofilter(extra_ordering=None, extra_filter=None):
+def autofilter(extra_ordering=None, extra_filter=None, exclude_fields=None):
     def wrapped(cls):
         # get indexed fields
         serializer_class = cls().get_serializer_class()
@@ -17,7 +17,8 @@ def autofilter(extra_ordering=None, extra_filter=None):
             try:
                 if name == "id" or getattr(model_cls._meta.get_field(name), "db_index", False) \
                         or getattr(model_cls._meta.get_field(name), "unique", False):
-                    fields.add(name)
+                    if exclude_fields is None or name not in exclude_fields:
+                        fields.add(name)
             except FieldDoesNotExist:
                 pass
 

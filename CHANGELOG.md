@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.7.1] - 2018-04-16
+### Added
+- option to exclude fields from autofilter
+
 ## [0.7.0] - 2018-02-15
 ### Added
 - support for Django 2.0

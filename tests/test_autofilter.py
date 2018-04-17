@@ -192,6 +192,16 @@ class TestAutoFilter(TestCase):
                                                                             "indexed_email", "non_indexed_email",
                                                                             "nullable_field", "unique_text"})
 
+    def test_excluding_fields(self):
+        @autofilter(exclude_fields=("indexed_int", "indexed_char", ))
+        class SampleApiV7(ListAPIView):
+            permission_classes = (AllowAny,)
+            serializer_class = SampleModelForAutofilterSerializerVer1
+            queryset = SampleModelForAutofilter.objects.all()
+
+        self.assertEqual(set(SampleApiV7.filter_fields.keys()), {"id", "fk", "indexed_text", "indexed_url",
+                                                                 "indexed_email", "nullable_field", "unique_text"})
+
     def test_integration_filtering(self):
         response = self.client.get(reverse("autofilter_test"), data={"id__gt": 0})
         self.assertEqual(response.status_code, 200)
