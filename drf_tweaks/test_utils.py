@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from contextlib import contextmanager
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
+from django.db.models.sql.compiler import SQLCompiler
 from rest_framework.test import APIClient, APITestCase
 
 import re
@@ -74,21 +76,59 @@ class query_counter(object):
                 warnings.warn("High number of queries executed: %d" % test_query_counter)
 
 
+class WouldSelectMultipleTablesForUpdate(Exception):
+    pass
+
+
+def replacement_get_from_clause(self):
+    from_, f_params = self.query_lock_limiter_old_get_from_clause()
+    if self.query.select_for_update and (len(from_) > 1):
+        raise WouldSelectMultipleTablesForUpdate()
+    return from_, f_params
+
+
+def patch_sqlcompiler():
+    SQLCompiler.query_lock_limiter_old_get_from_clause = SQLCompiler.get_from_clause
+    SQLCompiler.get_from_clause = replacement_get_from_clause
+
+
+def unpatch_sqlcompiler():
+    SQLCompiler.get_from_clause = SQLCompiler.query_lock_limiter_old_get_from_clause
+    delattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
+
+
+@contextmanager
+def query_lock_limiter(enable=False):
+    enabled = enable or getattr(settings, "TEST_DISALLOW_SELECT_MULTIPLE_FOR_UPDATE", False)
+    if not enabled:
+        yield
+        return
+
+    was_already_patched = hasattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
+    if not was_already_patched:
+        patch_sqlcompiler()
+    try:
+        yield
+    finally:
+        if not was_already_patched:
+            unpatch_sqlcompiler()
+
+
 class QueryCountingAPIClient(APIClient):
     def get(self, *args, **kwargs):
-        with query_counter():
+        with query_counter(), query_lock_limiter():
             return super(QueryCountingAPIClient, self).get(*args, **kwargs)
 
     def post(self, *args, **kwargs):
-        with query_counter():
+        with query_counter(), query_lock_limiter():
             return super(QueryCountingAPIClient, self).post(*args, **kwargs)
 
     def put(self, *args, **kwargs):
-        with query_counter():
+        with query_counter(), query_lock_limiter():
             return super(QueryCountingAPIClient, self).put(*args, **kwargs)
 
     def patch(self, *args, **kwargs):
-        with query_counter():
+        with query_counter(), query_lock_limiter():
             return super(QueryCountingAPIClient, self).patch(*args, **kwargs)
 
 

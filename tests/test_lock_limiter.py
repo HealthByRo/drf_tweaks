@@ -1,53 +1,24 @@
 # -*- coding: utf-8 -*-
 import pytest
-from contextlib import contextmanager
-from django.db.models.sql.compiler import SQLCompiler
+from django.conf.urls import url
+from django.http import HttpResponse
+from django.test import override_settings
+from rest_framework.test import APITestCase
+
+from drf_tweaks.test_utils import query_lock_limiter, QueryCountingAPIClient, WouldSelectMultipleTablesForUpdate
 from tests.models import SampleModel, SampleModelWithFK
-
-
-class WouldSelectMultipleTablesForUpdate(Exception):
-    pass
-
-
-def replacement_get_from_clause(self):
-    from_, f_params = self.query_lock_limiter_old_get_from_clause()
-    if self.query.select_for_update and (len(from_) > 1):
-        raise WouldSelectMultipleTablesForUpdate()
-    return from_, f_params
-
-
-def patch_sqlcompiler():
-    SQLCompiler.query_lock_limiter_old_get_from_clause = SQLCompiler.get_from_clause
-    SQLCompiler.get_from_clause = replacement_get_from_clause
-
-
-def unpatch_sqlcompiler():
-    SQLCompiler.get_from_clause = SQLCompiler.query_lock_limiter_old_get_from_clause
-    delattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
-
-
-@contextmanager
-def query_lock_limiter():
-    was_already_patched = hasattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
-    if not was_already_patched:
-        patch_sqlcompiler()
-    try:
-        yield
-    finally:
-        if not was_already_patched:
-            unpatch_sqlcompiler()
 
 
 @pytest.mark.django_db
 def test_nonlocking_queries():
-    with query_lock_limiter():
+    with query_lock_limiter(enable=True):
         list(SampleModel.objects.all())
         list(SampleModelWithFK.objects.all().select_related())
 
 
 @pytest.mark.django_db
 def test_queries_locking_single_tables():
-    with query_lock_limiter():
+    with query_lock_limiter(enable=True):
         list(SampleModel.objects.all().select_for_update())
         list(SampleModelWithFK.objects.all().select_for_update())
 
@@ -55,12 +26,37 @@ def test_queries_locking_single_tables():
 @pytest.mark.django_db
 def test_query_locking_multiple_tables():
     with pytest.raises(WouldSelectMultipleTablesForUpdate):
-        with query_lock_limiter():
+        with query_lock_limiter(enable=True):
             list(SampleModelWithFK.objects.filter(parent__a="").select_for_update())
 
 
 @pytest.mark.django_db
-def test_query_select_related_and_for_udpate():
+def test_query_select_related_and_for_update():
     with pytest.raises(WouldSelectMultipleTablesForUpdate):
-        with query_lock_limiter():
+        with query_lock_limiter(enable=True):
             list(SampleModelWithFK.objects.select_related().select_for_update())
+
+
+def grabby_select_view(request):
+    list(SampleModelWithFK.objects.select_related().select_for_update())
+    return HttpResponse()
+
+
+urlpatterns = [
+    url(r"", grabby_select_view, name="sample"),
+]
+
+
+class TestLockLimiter(APITestCase):
+    @override_settings(ROOT_URLCONF="tests.test_lock_limiter")
+    def test_disabled(self):
+        client = QueryCountingAPIClient()
+        for method in ("get", "post", "put", "patch"):
+            getattr(client, method)("/")
+
+    @override_settings(ROOT_URLCONF="tests.test_lock_limiter", TEST_DISALLOW_SELECT_MULTIPLE_FOR_UPDATE=True)
+    def test_enabled(self):
+        client = QueryCountingAPIClient()
+        for method in ("get", "post", "put", "patch"):
+            with pytest.raises(WouldSelectMultipleTablesForUpdate):
+                getattr(client, method)("/")
