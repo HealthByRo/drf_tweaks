@@ -82,14 +82,19 @@ class WouldSelectMultipleTablesForUpdate(Exception):
 
 def replacement_get_from_clause(self):
     from_, f_params = self.query_lock_limiter_old_get_from_clause()
-    if self.query.select_for_update and (len(from_) > 1):
-        raise WouldSelectMultipleTablesForUpdate()
+    # We're doing this after get_from_clause because at this point all the
+    # processing to fill the alias map is guaranteed to be done.
+    table_names = self.query.table_map.keys()
+    if self.query.select_for_update and (len(table_names) > 1):
+        if not sorted(table_names) in self.query_lock_limiter_whitelist:
+            raise WouldSelectMultipleTablesForUpdate(f"This query would select_for_update more than one table: {table_names}")
     return from_, f_params
 
 
-def patch_sqlcompiler():
+def patch_sqlcompiler(whitelisted_table_sets):
     SQLCompiler.query_lock_limiter_old_get_from_clause = SQLCompiler.get_from_clause
     SQLCompiler.get_from_clause = replacement_get_from_clause
+    SQLCompiler.query_lock_limiter_whitelist = [sorted(tables) for tables in whitelisted_table_sets]
 
 
 def unpatch_sqlcompiler():
@@ -98,15 +103,15 @@ def unpatch_sqlcompiler():
 
 
 @contextmanager
-def query_lock_limiter(enable=False):
-    enabled = enable or getattr(settings, "TEST_DISALLOW_SELECT_MULTIPLE_FOR_UPDATE", False)
+def query_lock_limiter(enable=False, whitelisted_table_sets=[]):
+    enabled = enable or getattr(settings, "TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED", False)
     if not enabled:
         yield
         return
 
     was_already_patched = hasattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
     if not was_already_patched:
-        patch_sqlcompiler()
+        patch_sqlcompiler(whitelisted_table_sets or getattr(settings, 'TEST_WHITELISTED_TABLE_SETS', []))
     try:
         yield
     finally:
