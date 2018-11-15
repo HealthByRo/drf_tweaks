@@ -24,7 +24,9 @@ class TestQueryCounter(object):
         return TestQueryCounter.__instance
 
     def new_query(self, sql, params, stack):
-        for pattern in getattr(settings, "TEST_QUERY_COUNTER_IGNORE_PATTERNS", [".*SAVEPOINT.*"]):
+        for pattern in getattr(
+            settings, "TEST_QUERY_COUNTER_IGNORE_PATTERNS", [".*SAVEPOINT.*"]
+        ):
             if re.match(pattern, sql):
                 return
 
@@ -63,7 +65,9 @@ class query_counter(object):
         if exc_type is None:
             test_query_counter = TestQueryCounter().get_counter()
 
-            if test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_RAISE_ERROR", 15):
+            if test_query_counter > getattr(
+                settings, "TEST_QUERY_NUMBER_RAISE_ERROR", 15
+            ):
                 if getattr(settings, "TEST_QUERY_NUMBER_PRINT_QUERIES", False):
                     print("=================== Query Stack ===================")
                     for query in TestQueryCounter().get_queries_stack():
@@ -71,47 +75,65 @@ class query_counter(object):
                         print("".join(query[2]))
                         print()
                     print("===================================================")
-                raise TooManySQLQueriesException("Too many queries executed: %d" % test_query_counter)
-            elif test_query_counter > getattr(settings, "TEST_QUERY_NUMBER_SHOW_WARNING", 10):
-                warnings.warn("High number of queries executed: %d" % test_query_counter)
+                raise TooManySQLQueriesException(
+                    "Too many queries executed: %d" % test_query_counter
+                )
+            elif test_query_counter > getattr(
+                settings, "TEST_QUERY_NUMBER_SHOW_WARNING", 10
+            ):
+                warnings.warn(
+                    "High number of queries executed: %d" % test_query_counter
+                )
 
 
 class WouldSelectMultipleTablesForUpdate(Exception):
     pass
 
 
-def replacement_get_from_clause(self):
-    from_, f_params = self.query_lock_limiter_old_get_from_clause()
-    # We're doing this after get_from_clause because at this point all the
-    # processing to fill the alias map is guaranteed to be done.
-    table_names = self.query.table_map.keys()
+def replacement_as_sql(self):
+    sql = self.query_lock_limiter_old_as_sql()
+    # We're doing this after as_sql because at this point all the
+    # processing to gather information about used tables is guaranteed to be done.
+    table_names = list(self.query.table_map.keys())
     if self.query.select_for_update and (len(table_names) > 1):
-        if not sorted(table_names) in self.query_lock_limiter_whitelist:
-            raise WouldSelectMultipleTablesForUpdate(f"This query would select_for_update more than one table: {table_names}")
-    return from_, f_params
+        whitelisted = sorted(table_names) in self.query_lock_limiter_whitelist
+        if not whitelisted:
+            raise WouldSelectMultipleTablesForUpdate(
+                f"Query would select_for_update more than one table: {sql}.  "
+                f"Add {table_names} to settings.TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS "
+                f"to allow it."
+            )
+    return sql
 
 
 def patch_sqlcompiler(whitelisted_table_sets):
-    SQLCompiler.query_lock_limiter_old_get_from_clause = SQLCompiler.get_from_clause
-    SQLCompiler.get_from_clause = replacement_get_from_clause
-    SQLCompiler.query_lock_limiter_whitelist = [sorted(tables) for tables in whitelisted_table_sets]
+    SQLCompiler.query_lock_limiter_old_as_sql = SQLCompiler.as_sql
+    SQLCompiler.as_sql = replacement_as_sql
+    SQLCompiler.query_lock_limiter_whitelist = [
+        sorted(tables) for tables in whitelisted_table_sets
+    ]
 
 
 def unpatch_sqlcompiler():
-    SQLCompiler.get_from_clause = SQLCompiler.query_lock_limiter_old_get_from_clause
-    delattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
+    SQLCompiler.as_sql = SQLCompiler.query_lock_limiter_old_as_sql
+    delattr(SQLCompiler, "query_lock_limiter_old_as_sql")
 
 
 @contextmanager
 def query_lock_limiter(enable=False, whitelisted_table_sets=[]):
-    enabled = enable or getattr(settings, "TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED", False)
+    enabled = enable or getattr(
+        settings, "TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED", False
+    )
     if not enabled:
         yield
         return
 
-    was_already_patched = hasattr(SQLCompiler, 'query_lock_limiter_old_get_from_clause')
+    was_already_patched = hasattr(SQLCompiler, "query_lock_limiter_old_as_sql")
     if not was_already_patched:
-        patch_sqlcompiler(whitelisted_table_sets or getattr(settings, 'TEST_WHITELISTED_TABLE_SETS', []))
+        whitelist = whitelisted_table_sets or getattr(
+            settings, "TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS", []
+        )
+        patch_sqlcompiler(whitelist)
     try:
         yield
     finally:
