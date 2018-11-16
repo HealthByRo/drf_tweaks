@@ -43,6 +43,10 @@ class DatabaseAccessLintingAPIClient(APIClient):
                 yield
 
 
+class DatabaseAccessLintingApiTestCase(APITestCase):
+    client_class = DatabaseAccessLintingAPIClient
+
+
 # The QueryCountingAPIClient is here for backwards compatibility;
 # choose DatabaseAccessLintingAPIClient instead.
 class QueryCountingAPIClient(DatabaseAccessLintingAPIClient):

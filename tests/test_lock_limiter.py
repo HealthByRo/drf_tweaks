@@ -3,11 +3,10 @@ import pytest
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.test import override_settings
-from rest_framework.test import APITestCase
 
 from drf_tweaks.test_utils import (
     query_lock_limiter,
-    DatabaseAccessLintingAPIClient,
+    DatabaseAccessLintingApiTestCase,
     WouldSelectMultipleTablesForUpdate,
 )
 from tests.models import SampleModel, SampleModelWithFK
@@ -56,22 +55,20 @@ def grabby_select_view(request):
 urlpatterns = [url(r"", grabby_select_view, name="sample")]
 
 
-class TestLockLimiter(APITestCase):
+class TestLockLimiter(DatabaseAccessLintingApiTestCase):
     @override_settings(ROOT_URLCONF="tests.test_lock_limiter")
     def test_disabled(self):
-        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
-            getattr(client, method)("/")
+            getattr(self.client, method)("/")
 
     @override_settings(
         ROOT_URLCONF="tests.test_lock_limiter",
         TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED=True,
     )
     def test_enabled(self):
-        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
             with pytest.raises(WouldSelectMultipleTablesForUpdate):
-                getattr(client, method)("/")
+                getattr(self.client, method)("/")
 
     @override_settings(
         ROOT_URLCONF="tests.test_lock_limiter",
@@ -81,6 +78,5 @@ class TestLockLimiter(APITestCase):
         ],
     )
     def test_whitelist(self):
-        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
-            getattr(client, method)("/")
+            getattr(self.client, method)("/")
