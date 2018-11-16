@@ -7,7 +7,7 @@ from rest_framework.test import APITestCase
 
 from drf_tweaks.test_utils import (
     query_lock_limiter,
-    QueryCountingAPIClient,
+    DatabaseAccessLintingAPIClient,
     WouldSelectMultipleTablesForUpdate,
 )
 from tests.models import SampleModel, SampleModelWithFK
@@ -59,7 +59,7 @@ urlpatterns = [url(r"", grabby_select_view, name="sample")]
 class TestLockLimiter(APITestCase):
     @override_settings(ROOT_URLCONF="tests.test_lock_limiter")
     def test_disabled(self):
-        client = QueryCountingAPIClient()
+        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
             getattr(client, method)("/")
 
@@ -68,7 +68,7 @@ class TestLockLimiter(APITestCase):
         TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED=True,
     )
     def test_enabled(self):
-        client = QueryCountingAPIClient()
+        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
             with pytest.raises(WouldSelectMultipleTablesForUpdate):
                 getattr(client, method)("/")
@@ -81,6 +81,6 @@ class TestLockLimiter(APITestCase):
         ],
     )
     def test_whitelist(self):
-        client = QueryCountingAPIClient()
+        client = DatabaseAccessLintingAPIClient()
         for method in ("get", "post", "put", "patch"):
             getattr(client, method)("/")
