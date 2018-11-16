@@ -17,7 +17,7 @@ Current tweaks
 * `Versioning extensions`_
 * `Autodocumentation`_ - extension for `Django Rest Swagger <https://github.com/marcgibbons/django-rest-swagger>`_
 * `Autooptimization`_
-* `Counting SQL queries in tests`_
+* `Linting database usage`_
 
 
 --------------
@@ -378,7 +378,7 @@ Autodocumentation
 Rationale
 ~~~~~~~~~
 
-[Django Rest Swagger][drs] is a awsome tool that generates swagger documentation out of your DRF API. There is however
+[Django Rest Swagger][drs] is a awesome tool that generates swagger documentation out of your DRF API. There is however
 one deficiency - it does not offer any hooks that would allow you to automaticaly generate some additional documentation.
 For example, if you want pagination parameters to be visible in the docs, you'd have to set it explicitly:
 
@@ -509,7 +509,7 @@ Custom class should inherit from AutodocBase:
 
         @classmethod
         def _generate_text(cls, documented_cls, base_doc, method_name):
-            return ""  # your implementation goes`here
+            return ""  # your implementation goes here
 
 
 Autooptimization
@@ -529,13 +529,16 @@ The optimization discovery is run in get_queryset, and it obtains serializer_cla
         serializer_class = SerializerClassWithManyLevelsOfSubserializers
 
 
-Counting SQL queries in tests
------------------------------
+Linting database usage
+----------------------
 
 Rationale
 ~~~~~~~~~
 
-It is important to make sure your web application is efficient and can work well under high load. The ``drf_tweaks.test_utils.QueryCountingApiTestCase`` allows to have an eye on the SQL queries number. For each view it counts how many calls were executed, and if the number is high (configurable in settings), it shows suitable information (warning or exception).
+It is important to make sure your web application is efficient and can work well under high load.  The ``drf_tweaks.test_utils.DatabaseAccessLintingApiTestCase`` can detect two potential gotchas: 
+* large number of queries: print out warnings and raise an Exception based on thresholds on query counts set via project settings,
+* multi-table `select_for_update`: raise an Exception if the code tries to lock more than one table, unless it's a combination whitelisted in project settings.
+
 
 Usage & Configuration
 ~~~~~~~~~~~~~~~~~~~~~
@@ -543,24 +546,33 @@ Usage & Configuration
 .. code:: python
 
     from django.urls import reverse_lazy
-    from drf_tweaks.test_utils import QueryCountingApiTestCase
+    from drf_tweaks.test_utils import DatabaseAccessLintingApiTestCase
 
-    class TestFoo(QueryCountingApiTestCase):
+    class TestFoo(DatabaseAccessLintingApiTestCase):
         def test_bar():
-            # In case there will be more SQL queries than configured in settings, an Exception or warning will be raised
+            # the linter will raise an Exception or print out a warning when it detects one of gotchas, as configured in settings
             self.client.post(reverse_lazy("some-post-url"))
             # ...
 
-To configure, set in your settings, for example:
+To configure, set in your settings:
 
-``TEST_QUERY_NUMBER_SHOW_WARNING = 1  # default: 10``
-``TEST_QUERY_NUMBER_RAISE_ERROR = 3  # default: 15``
-``TEST_QUERY_NUMBER_PRINT_QUERIES = True  # default: False``
-``TEST_QUERY_COUNTER_IGNORE_PATTERNS = [".*SAVEPOINT.*", ".*constance_config.*"]  # default [".*SAVEPOINT.*"]``
+TEST_QUERY_NUMBER_SHOW_WARNING
+  Print out a warning if the count of queries in a single view reaches this threshold.  Default: 10.
 
-If TEST_QUERY_NUMBER_PRINT_QUERIES is set to True, queries stack (with traceback) will be printed out.
+TEST_QUERY_NUMBER_RAISE_ERROR
+  Raise an Exception if the count of queries in a single view reaches this threshold.  Default: 15.
 
-Queries that matches any pattern from TEST_QUERY_COUNTER_IGNORE_PATTERNS will not be counted.
+TEST_QUERY_NUMBER_PRINT_QUERIES
+  Set to True to print out queries stack (with tracebacks).  Default: False.
+
+TEST_QUERY_COUNTER_IGNORE_PATTERNS
+  Exclude some queries from counting.  Set as a list of texts containing regular expressions.  Default: [".*SAVEPOINT.*"].
+
+TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED
+  Raise an Exception if the view tries to select_for_update more than one table.  Default: False.
+
+TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS
+  Allow to perform select_for_update on specified combinations of multiple tables.  Default: [].  Example: [("table1", "table2"), ...]
 
 To override those settings in tests, use the ``django.test.override_settings`` decorator
 (check the `docs <https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.override_settings>`_).
