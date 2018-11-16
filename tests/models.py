@@ -7,6 +7,10 @@ class SampleModel(models.Model):
     b = models.CharField(max_length=50, null=True)
 
 
+class SampleModelWithFK(models.Model):
+    parent = models.ForeignKey(SampleModel, on_delete=models.CASCADE)
+
+
 class SampleModelForAutofilter(models.Model):
     fk = models.ForeignKey(SampleModel, related_name="fk_1", on_delete=models.CASCADE)
     non_indexed_fk = models.ForeignKey(SampleModel, related_name="fk_2", db_index=False, on_delete=models.CASCADE)
