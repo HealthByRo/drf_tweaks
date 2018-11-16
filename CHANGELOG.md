@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.8.0] - 2018-11-17
+### Added
+- DatabaseAccessLintingAPIClient: detects attempts to `select_for_update` more than one table, includes the functionality of `DatabaseAccessLintingAPIClient`
+
 ## [0.7.1] - 2018-04-16
 ### Added
 - option to exclude fields from autofilter

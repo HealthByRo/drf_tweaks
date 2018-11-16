@@ -43,7 +43,7 @@ class DatabaseAccessLintingAPIClient(APIClient):
                 yield
 
 
-# The QueryCountingAPIClient is here for backwards compatibility; 
+# The QueryCountingAPIClient is here for backwards compatibility;
 # choose DatabaseAccessLintingAPIClient instead.
 class QueryCountingAPIClient(DatabaseAccessLintingAPIClient):
     def __init__(self, *args, **kwargs):
