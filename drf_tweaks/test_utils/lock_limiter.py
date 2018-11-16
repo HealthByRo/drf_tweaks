@@ -16,9 +16,9 @@ def replacement_as_sql(self):
         whitelisted = sorted(table_names) in self.query_lock_limiter_whitelist
         if not whitelisted:
             raise WouldSelectMultipleTablesForUpdate(
-                ("Query would select_for_update more than one table: %s.  " % (sql,)) +
-                ("Add %s to settings.TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS " % (table_names,)) +
-                "to allow it."
+                f"Query would select_for_update more than one table: {sql}.  "
+                f"Add {table_names} to settings.TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS "
+                f"to allow it."
             )
     return sql
 
