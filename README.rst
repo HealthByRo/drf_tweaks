@@ -577,6 +577,13 @@ TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS
 To override those settings in tests, use the ``django.test.override_settings`` decorator
 (check the `docs <https://docs.djangoproject.com/en/1.11/topics/testing/tools/#django.test.override_settings>`_).
 
+To temporarily disable query counting (for example, not to count queries executed in Celery tasks), use `TestQueryCounter.freeze`:
+
+.. code:: python
+
+    with TestQueryCounter.freeze():
+        # the query counter will ignore all queries executed within this block
+
 
 .. |travis| image:: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
 .. _travis: http://travis-ci.org/ArabellaTech/drf_tweaks?branch=master
