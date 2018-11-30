@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db.backends.utils import CursorWrapper
 
+import contextlib
 import re
 import traceback
 import warnings
@@ -32,6 +33,7 @@ class TestQueryCounter(object):
     def reset(self):
         self._counter = 0
         self._queries_stack = []
+        self._frozen = False
 
     def get_counter(self):
         return self._counter
@@ -39,9 +41,23 @@ class TestQueryCounter(object):
     def get_queries_stack(self):
         return self._queries_stack
 
+    @contextlib.contextmanager
+    def freeze():
+        # having a contextmanager that works nicely as a classmethod turned out
+        # to be tricky.
+        instance = TestQueryCounter()
+        prev_frozen = instance._frozen
+        instance._frozen = True
+        try:
+            yield
+        finally:
+            instance._frozen = prev_frozen
+
 
 def hacked_execute(self, sql, params=()):
-    TestQueryCounter().new_query(sql, params, traceback.format_stack(limit=10)[:8])
+    counter = TestQueryCounter()
+    if not counter._frozen:
+        counter.new_query(sql, params, traceback.format_stack(limit=10)[:8])
     return self.old_execute(sql, params)
 
 

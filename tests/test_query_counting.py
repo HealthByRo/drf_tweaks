@@ -22,15 +22,32 @@ def many_calls_view(request, n):
     return HttpResponse()
 
 
+def many_calls_partially_frozen_view(request, counted, frozen):
+    for i in range(int(counted)):
+        SampleModel.objects.create(a="a", b="b")
+    with test_utils.TestQueryCounter.freeze():
+        for i in range(int(frozen)):
+            SampleModel.objects.create(a="a", b="b")
+    return HttpResponse()
+
+
 urlpatterns = [
     url(r"^sample/$", custom_view, name="sample"),
-    url(r"^calls/(?P<n>[0-9]+)/$", many_calls_view, name="calls")
+    url(r"^calls/(?P<n>[0-9]+)/$", many_calls_view, name="calls"),
+    url(
+        r"^calls-partially-frozen/(?P<counted>[0-9]+)/(?P<frozen>[0-9]+)/$",
+        many_calls_partially_frozen_view,
+        name="calls-partially-frozen",
+    ),
 ]
 
 
 class TestQueryCounter(APITestCase):
-    @override_settings(ROOT_URLCONF="tests.test_query_counting", TEST_QUERY_NUMBER_SHOW_WARNING=2,
-                       TEST_QUERY_NUMBER_RAISE_ERROR=3)
+    @override_settings(
+        ROOT_URLCONF="tests.test_query_counting",
+        TEST_QUERY_NUMBER_SHOW_WARNING=2,
+        TEST_QUERY_NUMBER_RAISE_ERROR=3,
+    )
     def test_query_counting_client(self):
         client = test_utils.QueryCountingAPIClient()
         for method in ("get", "post", "put", "patch"):
@@ -46,3 +63,9 @@ class TestQueryCounter(APITestCase):
         # test raising error
         with self.assertRaises(test_utils.TooManySQLQueriesException):
             client.post(reverse("calls", kwargs={"n": 4}))
+
+        # freeze counting
+        client.post(
+            reverse("calls-partially-frozen", kwargs={"counted": 2, "frozen": 3})
+        )
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 2)
