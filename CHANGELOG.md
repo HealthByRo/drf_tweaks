@@ -4,6 +4,8 @@ All notable changes to this project will be documented in this file.
 ## [0.8.1] - 2018-11-30
 ### Added
 - TestQueryCounter.freeze decorator that disables the counter for the duration of a block
+### Removed
+- claims of support for Python <3.6 in setup.py
 
 ## [0.8.0] - 2018-11-17
 ### Added
