@@ -18,9 +18,10 @@ Current tweaks
 * `Autodocumentation`_ - extension for `Django Rest Swagger <https://github.com/marcgibbons/django-rest-swagger>`_
 * `Autooptimization`_
 * `Linting database usage`_
+* `Bulk edit API mixin`_
 
 
---------------
+--------------------
 
 Extended Serializers
 --------------------
@@ -535,7 +536,7 @@ Linting database usage
 Rationale
 ~~~~~~~~~
 
-It is important to make sure your web application is efficient and can work well under high load.  The ``drf_tweaks.test_utils.DatabaseAccessLintingApiTestCase`` can detect two potential gotchas: 
+It is important to make sure your web application is efficient and can work well under high load.  The ``drf_tweaks.test_utils.DatabaseAccessLintingApiTestCase`` can detect two potential gotchas:
 * large number of queries: print out warnings and raise an Exception based on thresholds on query counts set via project settings,
 * multi-table `select_for_update`: raise an Exception if the code tries to lock more than one table, unless it's a combination whitelisted in project settings.
 
@@ -583,6 +584,44 @@ To temporarily disable query counting (for example, not to count queries execute
 
     with TestQueryCounter.freeze():
         # the query counter will ignore all queries executed within this block
+
+
+Bulk edit API mixin
+-------------------
+Bulk edit/create/delete can be easily enabled for any model. All you need to have are details and list serializer.
+
+.. code:: python
+
+    class BulkEditAPI(BulkEditAPIMixin, ListCreateAPIView):
+        queryset = SomeModel.objects.all()
+        serializer_class = SomeModelSerializer
+        details_serializer_class = SomeModelDetailsSerializer
+        BULK_EDIT_ALLOW_DELETE_ITEMS = True  # default: False
+        BULK_EDIT_MAX_ITEMS = 10  # API will not be limited if set to None
+
+
+Creating
+~~~~~~~~
+To create a new object, **"temp_id"** key must be passed along with object's data.
+Temporary id is required to match validation errors to appropriate object.
+The create method uses the **serializer_class** serializer to create new objects.
+The view must implement the **create** method to be able to add new items - if the method is not present, the view will
+still work but adding new items will not be allowed.
+
+Editing
+~~~~~~~
+The **details_serializer_class** is used for editing items. If one item does not pass validation, none of the items will
+be editied.
+
+Deleting
+~~~~~~~~
+The **BULK_EDIT_ALLOW_DELETE_ITEMS** flag must be set to **True** to enable deleting objects. To mark that object
+should be deleted, add **"delete_object": True** next to it's **id** in the payload, for example:
+
+.. code:: json
+
+    [{"id": 1, "delete_object": True}]
+
 
 
 .. |travis| image:: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
