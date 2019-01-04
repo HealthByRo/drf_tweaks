@@ -1,5 +1,5 @@
 __title__ = "DRF Tweaks"
-__version__ = "0.8.1"
+__version__ = "0.9.0"
 __author__ = "Pawel Krzyzaniak"
 __license__ = "MIT"
 __copyright__ = "Copyright 2017 Arabella"
