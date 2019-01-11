@@ -1,6 +1,9 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.1] - 2019-01-11
+### Added
+- Ability to force prefetch related instead of select related
 
 ## [0.9.0] - 2019-01-03
 ### Added

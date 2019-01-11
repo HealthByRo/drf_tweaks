@@ -132,6 +132,13 @@ class SelectRelatedBySourceAPI(AutoOptimizeMixin, ListAPIView):
     serializer_class = SelectRelatedBySourceSerializer
 
 
+class PrefetchRelatedForcedAPI(AutoOptimizeMixin, ListAPIView):
+    AUTOOPTIMIZE_FORCE_PREFETCH = True
+    queryset = AutoOptimization3Model.objects.all()
+    permission_classes = (AllowAny,)
+    serializer_class = PrefetchWithSelectRelatedSerializer
+
+
 urlpatterns = [
     url(r"^autooptimization/simple-select-related$", SimpleSelectRelatedAPI.as_view(), name="simple-select-related"),
     url(r"^autooptimization/simple-prefetch-related$", SimplePrefetchRelatedAPI.as_view(),
@@ -140,6 +147,8 @@ urlpatterns = [
         name="prefetch-with-select-related"),
     url(r"^autooptimization/select-related-by-source$", SelectRelatedBySourceAPI.as_view(),
         name="select-related-by-source"),
+    url(r"^autooptimization/prefetch-related-forced$", PrefetchRelatedForcedAPI.as_view(),
+        name="prefetch-related-forced"),
 ]
 
 
@@ -249,6 +258,28 @@ class TestAutoOptimization(test_utils.QueryCountingApiTestCase):
         # main objects list, reverse_2_1, reverse_2_2, reverse_2_1__sample, reverse_2_2__sample,
         # reverse_2_1__reverse_1, reverse_2_2__reverse_1
         self.assertEqual(test_utils.TestQueryCounter().get_counter(), 7)
+
+    def test_forced_prefetch_related(self):
+        response = self.client.get(reverse("prefetch-related-forced"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.data[0]["name"], "m3")
+        self.assertEqual(response.data[0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["name"], "m2")
+        self.assertEqual(response.data[0]["reverse_2_1_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["sample_data"]["a"], "a")
+        self.assertEqual(len(response.data[0]["reverse_2_1_data"][0]["reverse_1"]), 3)
+        self.assertEqual(len(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"]), 3)
+        self.assertEqual(response.data[0]["reverse_2_2_data"][0]["reverse_1_data"][0]["name"], "m1")
+
+        # main objects list, reverse_2_1, reverse_2_2, reverse_2_1__sample, reverse_2_2__sample,
+        # reverse_2_1__reverse_1, reverse_2_2__reverse_1
+        self.assertEqual(test_utils.TestQueryCounter().get_counter(), 8)
 
     def test_prefetch_with_select_related_with_include_fields(self):
         response = self.client.get(reverse("prefetch-with-select-related"), {
