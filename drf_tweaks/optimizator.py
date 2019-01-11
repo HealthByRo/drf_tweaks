@@ -30,7 +30,7 @@ def check_if_prefetch_object(model_field):
 
 
 def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,
-                                   only_fields, include_fields):
+                                   only_fields, include_fields, force_prefetch=False):
     if not hasattr(serializer, "Meta") or not hasattr(serializer.Meta, "model"):
         return
     model_class = serializer.Meta.model
@@ -63,7 +63,7 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
             if "." not in field.source and hasattr(model_class, field.source):
                 model_field = getattr(model_class, field.source)
                 if check_if_related_object(model_field):
-                    if is_prefetch:
+                    if is_prefetch or force_prefetch:
                         prefetch_related_set.add(prefix + field.source)
                     else:
                         select_related_set.add(prefix + field.source)
@@ -92,7 +92,8 @@ class AutoOptimizeMixin(object):
         select_related_set = set()
         prefetch_related_set = set()
         run_autooptimization_discovery(
-            serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields
+            serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields,
+            force_prefetch=getattr(self, "AUTOOPTIMIZE_FORCE_PREFETCH", False)
         )
 
         # ammending queryset
