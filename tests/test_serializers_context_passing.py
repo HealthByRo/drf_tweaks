@@ -14,7 +14,6 @@ from drf_tweaks.serializers import ModelSerializer, pass_context
 from tests.models import (SecondLevelModelForContextPassingTest, TopLevelModelForContextPassingTest,
                           ThirdLevelModelForNestedFilteringTest)
 
-
 factory = APIRequestFactory()
 
 
@@ -228,11 +227,11 @@ class OnDemandFieldsAndNestedFieldsFilteringTestCase(APITestCase):
         self.assertEqual(
             response.data, {
                 "name": "top",
-                "on_demand_field": "on_demand",
                 "second_data": {
                     "name": "second",
                     "on_demand_field": "on_demand",
-                }
+                },
+                "on_demand_field": "on_demand"
             }
         )
 

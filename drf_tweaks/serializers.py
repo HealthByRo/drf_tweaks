@@ -1,20 +1,32 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+
 from copy import copy
+
 from rest_framework import serializers
 from rest_framework.fields import (api_settings, DjangoValidationError, empty, OrderedDict, set_value, SkipField,
                                    ValidationError)
 from rest_framework.serializers import as_serializer_error, PKOnlyObject
+from rest_framework.settings import import_from_string
+
+from .parsers import QueryParamParserBase
+from .settings import URL_PARSER
+
+
+def get_url_parser():
+    _parser = import_from_string(URL_PARSER, 'drf_tweaks')()
+    if not isinstance(_parser, QueryParamParserBase):
+        raise TypeError('The parser must be inherit from "QueryParamParserBase"')
+    return _parser
 
 
 class ContextPassing(object):
     @classmethod
     def filter_fields(cls, field_name, fields):
-        filtered_fields = set()
+        filtered_fields = OrderedDict()
         for field in fields:
-            parts = field.split("__", 1)
-            if len(parts) == 2 and parts[0] == field_name:
-                filtered_fields.add(parts[1])
+            if field == field_name:
+                filtered_fields.update(fields[field])
         return filtered_fields
 
     def __init__(self, field, parent, only_fields, include_fields):
@@ -76,13 +88,26 @@ class ContextPassing(object):
 
 
 def pass_context(field_name, context):
+    parser = get_url_parser()
     new_context = copy(context)
     query_params = context["request"].query_params if "request" in context else {}
-    only_fields = set(context.get("fields", query_params.get("fields", "").split(",")))
-    include_fields = set(context.get("include_fields", query_params.get("include_fields", "").split(",")))
 
-    new_context["fields"] = ContextPassing.filter_fields(field_name, only_fields)
-    new_context["include_fields"] = ContextPassing.filter_fields(field_name, include_fields)
+    only_fields = context.get('fields')
+    if only_fields and field_name in only_fields:
+        only_fields = only_fields.get(field_name)
+    else:
+        only_fields = query_params.get("fields", "").split(",")
+        only_fields = ContextPassing.filter_fields(field_name, parser.parse(only_fields))
+
+    include_fields = context.get('include_fields')
+    if include_fields and field_name in include_fields:
+        include_fields = include_fields.get(field_name)
+    else:
+        include_fields = query_params.get("include_fields", "").split(",")
+        include_fields = ContextPassing.filter_fields(field_name, parser.parse(include_fields))
+
+    new_context["include_fields"] = include_fields
+    new_context["fields"] = only_fields
 
     return new_context
 
@@ -93,6 +118,7 @@ class SerializerCustomizationMixin(object):
     custom_required_errors = custom_blank_errors = {}
 
     def __init__(self, *args, **kwargs):
+        self._parser = get_url_parser()
         super(SerializerCustomizationMixin, self).__init__(*args, **kwargs)
         self.change_required_message()
 
@@ -127,24 +153,18 @@ class SerializerCustomizationMixin(object):
 
         return fields
 
-    @classmethod
-    def add_main_fields_names_from_nested(cls, fields):
-        """If you add main_field__secondary_field, main_field should also be in the set."""
-        to_add = set()
-        for field in fields:
-            parts = field.split("__", 1)
-            if len(parts) == 2:
-                to_add.add(parts[0])
-        return fields | to_add
+    def add_main_fields_names_from_nested(self, fields):
+        return self._parser.parse(fields)
 
     # control over which fields get serialized
     def get_fields_for_serialization(self, fields_name):
-        fields = set()
+        fields = OrderedDict()
         if fields_name in self.context:
-            fields = set(self.context[fields_name])
+            fields = self.context[fields_name]
         elif "request" in self.context and fields_name in self.context["request"].query_params:
-            fields = set(self.context["request"].query_params[fields_name].split(","))
-        return self.add_main_fields_names_from_nested(fields)
+            fields = self.context["request"].query_params[fields_name].split(",")
+            fields = self.add_main_fields_names_from_nested(fields)
+        return fields
 
     def get_only_fields_and_include_fields(self):
         only_fields = self.get_fields_for_serialization("fields")
@@ -154,8 +174,8 @@ class SerializerCustomizationMixin(object):
 
     def get_on_demand_fields(self):
         if hasattr(self, "Meta"):
-            return getattr(self.Meta, "on_demand_fields", set())
-        return set()
+            return getattr(self.Meta, "on_demand_fields", {})
+        return {}
 
     def check_if_needs_serialization(self, field_name, fields, include_fields, on_demand_fields):
         if fields:
