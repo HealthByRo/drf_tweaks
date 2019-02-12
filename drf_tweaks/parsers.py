@@ -7,6 +7,10 @@ class QueryParamParserBase(object):
 
 
 class UnderlineQueryParamParser(QueryParamParserBase):
+    """
+        Parses string like 'user__id,user__city,user__city__name,first_name,job' to dictionary
+        """
+
     def parse(self, fields):
         def create_tree(fields, res=None):
             res = res or {}
@@ -24,3 +28,29 @@ class UnderlineQueryParamParser(QueryParamParserBase):
             return res
 
         return create_tree(fields)
+
+
+class BracesQueryParamsParser(QueryParamParserBase):
+    """
+    Parses string like 'user{id,city{name}, city, first_name}, job' to dictionary
+    """
+
+    def parse(self, fields):
+        import pyparsing as pp
+
+        fields = '{' + ','.join(fields) + '}'
+
+        simpleString = pp.Combine(pp.Regex(r'[a-zA-Z_]+')).setName("simple string without quotes")
+
+        LBRACE, RBRACE = map(pp.Suppress, "{}")
+
+        jsonString = simpleString
+
+        jsonObject = pp.Forward()
+        jsonValue = pp.Forward()
+        jsonValue << (jsonString | pp.Group(jsonObject))
+        memberDef = pp.Group(jsonString + pp.Optional(jsonValue))
+        jsonMembers = pp.delimitedList(memberDef)
+        jsonObject << pp.Dict(LBRACE + pp.Optional(jsonMembers) + RBRACE)
+
+        return jsonObject.parseString(fields).asDict()
