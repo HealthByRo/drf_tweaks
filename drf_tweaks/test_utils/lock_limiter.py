@@ -7,8 +7,8 @@ class WouldSelectMultipleTablesForUpdate(Exception):
     pass
 
 
-def replacement_as_sql(self):
-    sql = self.query_lock_limiter_old_as_sql()
+def replacement_as_sql(self, *args, **kwargs):
+    sql = self.query_lock_limiter_old_as_sql(*args, **kwargs)
     # We're doing this after as_sql because at this point all the
     # processing to gather information about used tables is guaranteed to be done.
     table_names = list(self.query.table_map.keys())

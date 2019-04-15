@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.2] - 2019-04-15
+### Fixed
+- A bug in the lock limiter: it'd crash when with_col_aliases was passed to SQLCompiler.as_sql()
+
 ## [0.9.1] - 2019-01-11
 ### Added
 - Ability to force prefetch related instead of select related
