@@ -1,6 +1,6 @@
 DRF Tweaks
 ========================
-|travis|_ |pypi|_ |requiresio|_ |codecov|_
+|travis|_ |pypi|_ |codecov|_
 
 --------------
 
@@ -624,14 +624,11 @@ should be deleted, add **"delete_object": True** next to it's **id** in the payl
 
 
 
-.. |travis| image:: https://secure.travis-ci.org/ArabellaTech/drf_tweaks.svg?branch=master
-.. _travis: http://travis-ci.org/ArabellaTech/drf_tweaks?branch=master
+.. |travis| image:: https://secure.travis-ci.org/HealthByRo/drf_tweaks.svg?branch=master
+.. _travis: http://travis-ci.org/HealthByRo/drf_tweaks?branch=master
 
 .. |pypi| image:: https://img.shields.io/pypi/v/drf_tweaks.svg
 .. _pypi: https://pypi.python.org/pypi/drf_tweaks
 
-.. |codecov| image:: https://img.shields.io/codecov/c/github/ArabellaTech/drf_tweaks/master.svg
-.. _codecov: http://codecov.io/github/ArabellaTech/drf_tweaks?branch=master
-
-.. |requiresio| image:: https://requires.io/github/ArabellaTech/drf_tweaks/requirements.svg?branch=master
-.. _requiresio: https://github.com/ArabellaTech/drf_tweaks
+.. |codecov| image:: https://img.shields.io/codecov/c/github/HealthByRo/drf_tweaks/master.svg
+.. _codecov: http://codecov.io/github/HealthByRo/drf_tweaks?branch=master
