@@ -17,6 +17,7 @@
 """
 from __future__ import unicode_literals
 from django.conf import settings
+from functools import wraps
 from rest_framework.settings import import_from_string
 
 import six
@@ -232,6 +233,7 @@ else:
 def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_classess=None):
     def copy_method(cls, method_name, method):
         """ create facade for a method with preservation of original docstring """
+        @wraps(method)
         def shadow_method(self, *args, **kwargs):
             return method(self, *args, **kwargs)
         shadow_method.__doc__ = method.__doc__
