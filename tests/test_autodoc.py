@@ -317,4 +317,3 @@ class AutodocTestCase(APITestCase):
 
     def test_autodoc_preserves_wrapped(self):
         self.assertTrue(callable(SampleNotVersionedApi.get.__wrapped__))
-
