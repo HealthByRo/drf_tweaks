@@ -314,3 +314,6 @@ class AutodocTestCase(APITestCase):
 
     def test_autodoc_for_on_demand_fields(self):
         self.assertEqual(SampleOnDemandAutodocApi.get.__doc__, ON_DEMAND_GET)
+
+    def test_autodoc_preserves_wrapped(self):
+        self.assertTrue(callable(SampleNotVersionedApi.get.__wrapped__))
