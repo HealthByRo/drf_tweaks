@@ -12,7 +12,9 @@ def replacement_as_sql(self, *args, **kwargs):
     # We're doing this after as_sql because at this point all the
     # processing to gather information about used tables is guaranteed to be done.
     table_names = list(self.query.table_map.keys())
-    if self.query.select_for_update and (len(table_names) > 1):
+    if self.query.select_for_update and (len(table_names) > 1) and not self.query.select_for_update_of:
+        # if select_for_update_of is defined, it means we are locking only explicitly defined rows, so we do not apply
+        # the mechanism to detect accidental multi-locks
         whitelisted = sorted(table_names) in self.query_lock_limiter_whitelist
         if not whitelisted:
             raise WouldSelectMultipleTablesForUpdate(

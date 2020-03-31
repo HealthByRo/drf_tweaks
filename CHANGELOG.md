@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.4] - 2020-03-31
+### Added
+- Added support for `select_for_update(of=...)` to lock limiter
+
 ## [0.9.3] - 2019-04-15
 ### Fixed
 - Use `wraps` to correctly wrap copied methods
