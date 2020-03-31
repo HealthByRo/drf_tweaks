@@ -47,6 +47,12 @@ def test_query_select_related_and_for_update():
             list(SampleModelWithFK.objects.select_related().select_for_update())
 
 
+@pytest.mark.django_db
+def test_query_select_related_and_for_update_when_using_of():
+    with query_lock_limiter(enable=True):
+        list(SampleModelWithFK.objects.select_related().select_for_update(of=("self",)))
+
+
 def grabby_select_view(request):
     list(SampleModelWithFK.objects.select_related().select_for_update())
     return HttpResponse()
