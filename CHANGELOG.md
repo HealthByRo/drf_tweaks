@@ -5,6 +5,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Added support for `select_for_update(of=...)` to lock limiter
 
+### Removed
+- support for Django <2.0
+
 ## [0.9.3] - 2019-04-15
 ### Fixed
 - Use `wraps` to correctly wrap copied methods
