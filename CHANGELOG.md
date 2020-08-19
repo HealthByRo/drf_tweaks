@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.5] - 2020-08-19
+### Changed
+- Dependencies (swagger >2)
+- Small cleanup in tox
+
 ## [0.9.4] - 2020-03-31
 ### Added
 - Added support for `select_for_update(of=...)` to lock limiter
