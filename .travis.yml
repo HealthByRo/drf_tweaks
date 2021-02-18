@@ -2,8 +2,24 @@ sudo: false
 
 language: python
 
-python:
-  - "3.6"
+matrix:
+  include:
+    - python: "3.8"
+      env: TOXENV=py38-django2
+
+    - python: "3.8"
+      env: TOXENV=py38-django30
+    - python: "3.8"
+      env: TOXENV=py38-django31
+    - python: "3.8"
+      env: TOXENV=py38-djangomaster
+
+    - python: "3.9"
+      env: TOXENV=py39-django30
+    - python: "3.9"
+      env: TOXENV=py39-django31
+    - python: "3.9"
+      env: TOXENV=py39-djangomaster
 
 install:
   - pip install tox tox-travis
