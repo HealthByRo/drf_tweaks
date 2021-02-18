@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.conf.urls import url
 from django.test import override_settings
+from django.urls import re_path
 from rest_framework import serializers
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
@@ -109,8 +109,8 @@ class SampleV2API(RetrieveUpdateAPIView):
 
 
 urlpatterns = [
-    url(r"^test-context-passing/(?P<pk>[\d]+)$", SampleAPI.as_view(), name="test-context-passing"),
-    url(r"^test-context-passing-v2/(?P<pk>[\d]+)$", SampleV2API.as_view(), name="test-context-passing-v2"),
+    re_path(r"^test-context-passing/(?P<pk>[\d]+)$", SampleAPI.as_view(), name="test-context-passing"),
+    re_path(r"^test-context-passing-v2/(?P<pk>[\d]+)$", SampleV2API.as_view(), name="test-context-passing-v2"),
 ]
 
 

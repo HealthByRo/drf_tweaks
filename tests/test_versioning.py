@@ -2,8 +2,8 @@
 from __future__ import unicode_literals
 
 from django.conf import settings
-from django.conf.urls import url
 from django.test import override_settings
+from django.urls import re_path
 from rest_framework import serializers
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
@@ -87,12 +87,12 @@ class SampleCustomDeprecatedVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView)
 
 
 urlpatterns = [
-    url(r"^sample/(?P<pk>[\d]+)$", SampleVersionedApi.as_view(), name="sample_api"),
-    url(r"^sample/misconfigured/(?P<pk>[\d]+)$", SampleMisconfiguredApi.as_view(), name="sample_misconfigured_api"),
-    url(r"^sample/deprecated-custom/(?P<pk>[\d]+)$", SampleCustomDeprecatedVersionedApi.as_view(),
-        name="sample_custom_deprecated_api"),
-    url(r"^sample/deprecated-default/(?P<pk>[\d]+)$", SampleDefaultDeprecatedVersionedApi.as_view(),
-        name="sample_default_deprecated_api"),
+    re_path(r"^sample/(?P<pk>[\d]+)$", SampleVersionedApi.as_view(), name="sample_api"),
+    re_path(r"^sample/misconfigured/(?P<pk>[\d]+)$", SampleMisconfiguredApi.as_view(), name="sample_misconfigured_api"),
+    re_path(r"^sample/deprecated-custom/(?P<pk>[\d]+)$", SampleCustomDeprecatedVersionedApi.as_view(),
+            name="sample_custom_deprecated_api"),
+    re_path(r"^sample/deprecated-default/(?P<pk>[\d]+)$", SampleDefaultDeprecatedVersionedApi.as_view(),
+            name="sample_default_deprecated_api"),
 ]
 
 

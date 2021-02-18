@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-from django.conf.urls import url
 from rest_framework.permissions import AllowAny
 from django.test import override_settings
+from django.urls import re_path
 from drf_tweaks import serializers
 from rest_framework.serializers import CharField
 from rest_framework.generics import ListAPIView, RetrieveAPIView
@@ -140,15 +140,15 @@ class PrefetchRelatedForcedAPI(AutoOptimizeMixin, ListAPIView):
 
 
 urlpatterns = [
-    url(r"^autooptimization/simple-select-related$", SimpleSelectRelatedAPI.as_view(), name="simple-select-related"),
-    url(r"^autooptimization/simple-prefetch-related$", SimplePrefetchRelatedAPI.as_view(),
-        name="simple-prefetch-related"),
-    url(r"^autooptimization/prefetch-with-select-related$", PrefetchWithSelectRelatedAPI.as_view(),
-        name="prefetch-with-select-related"),
-    url(r"^autooptimization/select-related-by-source$", SelectRelatedBySourceAPI.as_view(),
-        name="select-related-by-source"),
-    url(r"^autooptimization/prefetch-related-forced$", PrefetchRelatedForcedAPI.as_view(),
-        name="prefetch-related-forced"),
+    re_path(r"^autooptimization/simple-select-related$", SimpleSelectRelatedAPI.as_view(), name="simple-select-related"),
+    re_path(r"^autooptimization/simple-prefetch-related$", SimplePrefetchRelatedAPI.as_view(),
+            name="simple-prefetch-related"),
+    re_path(r"^autooptimization/prefetch-with-select-related$", PrefetchWithSelectRelatedAPI.as_view(),
+            name="prefetch-with-select-related"),
+    re_path(r"^autooptimization/select-related-by-source$", SelectRelatedBySourceAPI.as_view(),
+            name="select-related-by-source"),
+    re_path(r"^autooptimization/prefetch-related-forced$", PrefetchRelatedForcedAPI.as_view(),
+            name="prefetch-related-forced"),
 ]
 
 
