@@ -1,6 +1,6 @@
-from django.conf.urls import url
 from django.db import models
 from django.test import override_settings
+from django.urls import re_path
 from django.urls import reverse
 from rest_framework import serializers
 from rest_framework.generics import ListCreateAPIView
@@ -32,7 +32,7 @@ class BulkEditAPI(BulkEditAPIMixin, ListCreateAPIView):
 
 
 urlpatterns = [
-    url(r"^fakeapi$", BulkEditAPI.as_view(), name="bulkedit"),
+    re_path(r"^fakeapi$", BulkEditAPI.as_view(), name="bulkedit"),
 ]
 
 

@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.conf.urls import url
 from django.test import TestCase
 from django.test import override_settings
+from django.urls import re_path
 from django_filters.rest_framework import DjangoFilterBackend
 from django_filters.rest_framework import FilterSet
 from rest_framework import filters
@@ -92,8 +92,8 @@ class SampleApiV6(ListAPIView):
 
 
 urlpatterns = [
-    url(r"^autofilter/$", SampleApiV1.as_view(), name="autofilter_test"),
-    url(r"^autofilter-with-class/$", SampleApiV1.as_view(), name="autofilter_with_class_test"),
+    re_path(r"^autofilter/$", SampleApiV1.as_view(), name="autofilter_test"),
+    re_path(r"^autofilter-with-class/$", SampleApiV1.as_view(), name="autofilter_with_class_test"),
 ]
 
 
