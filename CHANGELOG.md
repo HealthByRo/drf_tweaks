@@ -1,6 +1,11 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.6] - 2021-03-04
+### Changed
+- Run tests on Python 3.9.
+- Explicitly test with Django 3.0 and 3.1.
+
 ## [0.9.5] - 2020-08-19
 ### Changed
 - Dependencies (swagger >2)
