@@ -76,7 +76,10 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
             if hasattr(model_class, field_name):
                 model_field = getattr(model_class, field_name)
                 if check_if_related_object(model_field):
-                    select_related_set.add(prefix + field_name)
+                    if is_prefetch or force_prefetch:
+                        prefetch_related_set.add(prefix + field_name)
+                    else:
+                        select_related_set.add(prefix + field_name)
 
 
 class AutoOptimizeMixin(object):
