@@ -1,6 +1,10 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.9.7] - 2021-09-29
+### Changed
+- Fix issue with django.core.exceptions.FieldError: Invalid field name(s) given in select_related: error.
+
 ## [0.9.6] - 2021-03-04
 ### Changed
 - Run tests on Python 3.9.
