@@ -1,0 +1,21 @@
+# CVE2EPSS Alert Parser
+# Tool to open and close Dependabot alerts based on EPSS score
+---
+name: CVE2EPSS
+
+'on':
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * 0'
+
+jobs:
+  cve2epss:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: CVE2EPSS
+        uses: HealthByRo/prodsec-tools/actions/cve2Epss@main
+        with:
+          TOKEN: ${{ secrets.GHAS_GITHUB_TOKEN }}
+          EPSS_SCORE: '0.003'
+          REPO: ${{ github.repository }}
