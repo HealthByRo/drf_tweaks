@@ -10,7 +10,7 @@ name: CVE2EPSS
 
 permissions:
   security-events: write
-	
+
 jobs:
   cve2epss:
     runs-on: ubuntu-latest
