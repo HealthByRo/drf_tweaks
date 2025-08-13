@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from collections import OrderedDict
 from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
@@ -54,7 +53,7 @@ class NoCountsLimitOffsetPagination(LimitOffsetPagination):
         return self.results
 
     def get_paginated_response(self, data):
-        return Response(OrderedDict([
+        return Response(dict([
             ('next', self.get_next_link()),
             ('previous', self.get_previous_link()),
             ('results', data)
@@ -115,7 +114,7 @@ class NoCountsPageNumberPagination(PageNumberPagination):
         return self.results
 
     def get_paginated_response(self, data):
-        return Response(OrderedDict([
+        return Response(dict([
             ('next', self.get_next_link()),
             ('previous', self.get_previous_link()),
             ('results', data)
