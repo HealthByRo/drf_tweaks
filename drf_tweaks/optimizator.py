@@ -1,32 +1,18 @@
 # -*- coding: utf-8 -*-
-from distutils.version import LooseVersion
-from django import get_version
 from drf_tweaks.serializers import ContextPassing
 from rest_framework.serializers import ListSerializer, Serializer
 
-try:
-    from django.db.models.fields import related_descriptors
-except ImportError:
-    from django.db.models.fields import related as related_descriptors
+from django.db.models.fields import related_descriptors
 
 
 def check_if_related_object(model_field):
-    if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        return any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
-                                                        related_descriptors.ReverseOneToOneDescriptor))
-    else:
-        return any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
-                                                        related_descriptors.ReverseSingleRelatedObjectDescriptor))
+    return any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
+                                                    related_descriptors.ReverseOneToOneDescriptor))
 
 
 def check_if_prefetch_object(model_field):
-    if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        return any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
-                                                        related_descriptors.ReverseManyToOneDescriptor))
-    else:
-        return any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
-                                                        related_descriptors.ForeignRelatedObjectsDescriptor,
-                                                        related_descriptors.ReverseManyRelatedObjectsDescriptor))
+    return any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
+                                                    related_descriptors.ReverseManyToOneDescriptor))
 
 
 def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,

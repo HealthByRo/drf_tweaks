@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 
 from copy import copy
 from rest_framework import serializers
-from rest_framework.fields import (api_settings, DjangoValidationError, empty, OrderedDict, set_value, SkipField,
+from rest_framework.fields import (api_settings, DjangoValidationError, empty, SkipField,
                                    ValidationError)
 from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
@@ -175,7 +175,7 @@ class SerializerCustomizationMixin(object):
         - fields filtering (w/o touching db when not necessary)
         - on_demand fields.
         """
-        ret = OrderedDict()
+        ret = dict()
         fields = self._readable_fields
 
         # ++ change to the original code from DRF
@@ -214,8 +214,8 @@ class SerializerCustomizationMixin(object):
                 api_settings.NON_FIELD_ERRORS_KEY: [message]
             })
 
-        ret = OrderedDict()
-        errors = OrderedDict()
+        ret = dict()
+        errors = dict()
         fields = self._writable_fields
 
         for field in fields:
@@ -232,7 +232,7 @@ class SerializerCustomizationMixin(object):
             except SkipField:
                 pass
             else:
-                set_value(ret, field.source_attrs, validated_value)
+                self.set_value(ret, field.source_attrs, validated_value)
 
         return ret, errors
 
@@ -245,14 +245,14 @@ class SerializerCustomizationMixin(object):
         value, to_internal_errors = self.to_internal_value(data)
 
         # running validators
-        validators_errors = OrderedDict()
+        validators_errors = dict()
         try:
             self.run_validators(value)
         except (ValidationError, DjangoValidationError) as exc:
             validators_errors = as_serializer_error(exc)
 
         # running final validation
-        validation_errors = OrderedDict()
+        validation_errors = dict()
         try:
             value = self.validate(value)
             assert value is not None, ".validate() should return the validated data"
