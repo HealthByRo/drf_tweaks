@@ -7,16 +7,14 @@ from rest_framework import serializers
 from rest_framework.generics import RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.reverse import reverse
-from rest_framework.test import APIRequestFactory
-from rest_framework.test import APITestCase
+from rest_framework.test import APIRequestFactory, APITestCase
 
 from drf_tweaks.serializers import ModelSerializer, pass_context
 from tests.models import (
     SecondLevelModelForContextPassingTest,
-    TopLevelModelForContextPassingTest,
     ThirdLevelModelForNestedFilteringTest,
+    TopLevelModelForContextPassingTest,
 )
-
 
 factory = APIRequestFactory()
 

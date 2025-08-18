@@ -2,20 +2,18 @@
 from __future__ import unicode_literals
 
 from django_filters.rest_framework import FilterSet
-from rest_framework import filters
-from rest_framework import serializers
-from rest_framework.generics import ListAPIView
-from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework import filters, serializers
+from rest_framework.generics import ListAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
 from drf_tweaks.autodoc import (
-    autodoc,
     BaseInfoAutodoc,
     OnDemandFieldsAutodoc,
     PaginationAutodoc,
     PermissionsAutodoc,
+    autodoc,
 )
 from drf_tweaks.autofilter import autofilter
 from drf_tweaks.pagination import NoCountsLimitOffsetPagination

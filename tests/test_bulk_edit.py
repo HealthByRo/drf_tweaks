@@ -1,7 +1,6 @@
 from django.db import models
 from django.test import override_settings
-from django.urls import re_path
-from django.urls import reverse
+from django.urls import re_path, reverse
 from rest_framework import serializers
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.test import APITestCase

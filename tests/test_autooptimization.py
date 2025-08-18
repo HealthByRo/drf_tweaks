@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
-from rest_framework.permissions import AllowAny
 from django.test import override_settings
 from django.urls import re_path
-from drf_tweaks import serializers
-from rest_framework.serializers import CharField
 from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import AllowAny
 from rest_framework.reverse import reverse
+from rest_framework.serializers import CharField
+
+from drf_tweaks import serializers, test_utils
 from drf_tweaks.optimizator import AutoOptimizeMixin
-from drf_tweaks import test_utils
 from tests.models import (
     AutoOptimization1Model,
     AutoOptimization2Model,

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
-from drf_tweaks.serializers import ContextPassing
+from django.db.models.fields import related_descriptors
 from rest_framework.serializers import ListSerializer, Serializer
 
-from django.db.models.fields import related_descriptors
+from drf_tweaks.serializers import ContextPassing
 
 
 def check_if_related_object(model_field):

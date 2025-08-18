@@ -3,13 +3,10 @@ from __future__ import unicode_literals
 
 from rest_framework import serializers
 from rest_framework.request import Request
-from rest_framework.test import APIRequestFactory
-from rest_framework.test import APITestCase
+from rest_framework.test import APIRequestFactory, APITestCase
 
-from drf_tweaks.serializers import ModelSerializer
-from drf_tweaks.serializers import Serializer
+from drf_tweaks.serializers import ModelSerializer, Serializer
 from tests.models import SampleModel
-
 
 factory = APIRequestFactory()
 

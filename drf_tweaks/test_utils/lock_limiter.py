@@ -1,4 +1,5 @@
 from contextlib import contextmanager
+
 from django.conf import settings
 from django.db.models.sql.compiler import SQLCompiler
 

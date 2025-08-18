@@ -2,15 +2,16 @@
 from __future__ import unicode_literals
 
 from copy import copy
+
 from rest_framework import serializers
 from rest_framework.fields import (
-    api_settings,
     DjangoValidationError,
-    empty,
     SkipField,
     ValidationError,
+    api_settings,
+    empty,
 )
-from rest_framework.serializers import as_serializer_error, PKOnlyObject
+from rest_framework.serializers import PKOnlyObject, as_serializer_error
 
 
 class ContextPassing(object):

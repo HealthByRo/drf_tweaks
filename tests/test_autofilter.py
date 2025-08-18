@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.test import TestCase
-from django.test import override_settings
+from django.test import TestCase, override_settings
 from django.urls import re_path
-from django_filters.rest_framework import DjangoFilterBackend
-from django_filters.rest_framework import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend, FilterSet
 from rest_framework import filters
 from rest_framework.generics import ListAPIView
 from rest_framework.permissions import AllowAny
@@ -13,8 +11,7 @@ from rest_framework.reverse import reverse
 
 from drf_tweaks import serializers
 from drf_tweaks.autofilter import autofilter
-from tests.models import SampleModel
-from tests.models import SampleModelForAutofilter
+from tests.models import SampleModel, SampleModelForAutofilter
 
 
 class SampleModelForAutofilterSerializerVer1(serializers.ModelSerializer):

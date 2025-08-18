@@ -5,9 +5,9 @@ target-version = "py311" # Lowest supported per setup.py
 extend-select = [
     "ASYNC", # flake8-async
     "B",     # flake8-bugbear
-    "FAST",  # FastAPI
     "RUF",   # Ruff
     "T10",   # flake8-debugger
+    "I",     # isort
 ]
 
 extend-ignore = [
@@ -18,9 +18,6 @@ extend-ignore = [
     "B028",  # No explicit `stacklevel` keyword argument found
     "B026",  # Star-arg unpacking after a keyword argument is strongly discouraged
 ]
-
-
-flake8-bugbear.extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
 
 
 [lint.isort]

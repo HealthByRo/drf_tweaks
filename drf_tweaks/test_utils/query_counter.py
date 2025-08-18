@@ -1,10 +1,10 @@
-from django.conf import settings
-from django.db.backends.utils import CursorWrapper
-
 import contextlib
 import re
 import traceback
 import warnings
+
+from django.conf import settings
+from django.db.backends.utils import CursorWrapper
 
 
 class TooManySQLQueriesException(Exception):

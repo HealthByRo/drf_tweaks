@@ -5,9 +5,9 @@ from django.test import override_settings
 from django.urls import re_path
 
 from drf_tweaks.test_utils import (
-    query_lock_limiter,
     DatabaseAccessLintingApiTestCase,
     WouldSelectMultipleTablesForUpdate,
+    query_lock_limiter,
 )
 from tests.models import SampleModel, SampleModelWithFK
 

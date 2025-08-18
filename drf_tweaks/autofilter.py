@@ -1,4 +1,5 @@
 from copy import copy
+
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend

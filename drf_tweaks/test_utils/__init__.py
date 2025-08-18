@@ -1,14 +1,16 @@
 from contextlib import contextmanager
+
+from rest_framework.test import APIClient, APITestCase
+
 from drf_tweaks.test_utils.lock_limiter import (
-    query_lock_limiter,
     WouldSelectMultipleTablesForUpdate,  # noqa: F401
+    query_lock_limiter,
 )
 from drf_tweaks.test_utils.query_counter import (
-    query_counter,
     TestQueryCounter,  # noqa: F401
     TooManySQLQueriesException,  # noqa: F401
+    query_counter,
 )
-from rest_framework.test import APIClient, APITestCase
 
 
 class DatabaseAccessLintingAPIClient(APIClient):
