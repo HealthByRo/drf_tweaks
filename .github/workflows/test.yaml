@@ -1,0 +1,52 @@
+name: Run tests
+permissions:
+  contents: read
+"on":
+  push:
+    branches: "**"
+    # don't run on tag pushes
+
+jobs:
+  test:
+    name: 'Test: ${{ matrix.python-version }}'
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v3
+      - run: |
+          git fetch --prune --unshallow
+
+      - uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: "x64"
+
+      - name: "Install tox"
+        run: pip install tox tox-gh-actions
+
+      - name: "Run tests"
+        run: |
+          tox -v
+
+  all-clear:
+    runs-on: ubuntu-24.04
+    needs: test
+    if: always()
+    steps:
+      - name: "Check job dependencies"
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const needs = ${{ toJSON(needs) }};
+            const lessThanSuccess = [];
+            for (const [name, { result }] of Object.entries(needs)) {
+              if (result !== 'success') {
+                lessThanSuccess.push(`${name} (${result})`);
+              }
+            }
+            if (lessThanSuccess.length > 0) {
+              core.setFailed(`Some of the needed jobs were less than successful: ${lessThanSuccess.join(', ')}`);
+            }

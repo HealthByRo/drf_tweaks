@@ -1,7 +1,6 @@
 from django.db import models
 from django.test import override_settings
-from django.urls import re_path
-from django.urls import reverse
+from django.urls import re_path, reverse
 from rest_framework import serializers
 from rest_framework.generics import ListCreateAPIView
 from rest_framework.test import APITestCase
@@ -52,7 +51,8 @@ class BulkEditMixinTestCase(APITestCase):
         # check payload
         response = self._call_api(self.url, "put", 400)
         self.assertEqual(
-            response.data, {"non_field_errors": ["Payload for bulk edit must be a list of objects to edit."]}
+            response.data,
+            {"non_field_errors": ["Payload for bulk edit must be a list of objects to edit."]},
         )
 
         # test incorrect payload (id must be present, otherwise the item is skipped)
@@ -79,16 +79,19 @@ class BulkEditMixinTestCase(APITestCase):
         # editing more than "BULK_EDIT_MAX_ITEMS" cannot be allowed
         data = [{"id": self.first_item.pk, "value": 1}] * 11
         response = self._call_api(self.url, "put", 400, data)
-        self.assertEqual(response.data, {"non_field_errors": ["Cannot edit more than 10 items at once."]})
+        self.assertEqual(
+            response.data,
+            {"non_field_errors": ["Cannot edit more than 10 items at once."]},
+        )
 
         # test correct create + edit + delete
         data = [
             {"temp_id": -1, "value": -1},  # item to be created
             {"id": self.first_item.pk, "value": 100},  # item to be changed
-            {"id": self.second_item.pk, "delete_object": True}  # item to be deleted
+            {"id": self.second_item.pk, "delete_object": True},  # item to be deleted
         ]
         response = self._call_api(self.url, "put", 200, data)
-        self.assertEqual(response.data, [
-            {"id": self.first_item.pk, "value": 100},
-            {"id": 3, "value": -1}
-        ])
+        self.assertEqual(
+            response.data,
+            [{"id": self.first_item.pk, "value": 100}, {"id": 3, "value": -1}],
+        )

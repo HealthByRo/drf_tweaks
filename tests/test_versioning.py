@@ -23,7 +23,6 @@ class SampleVersionedApiSerializerVer1(serializers.ModelSerializer):
 
 
 class SampleVersionedApiSerializerVer2(serializers.ModelSerializer):
-
     class Meta:
         model = SampleModel
         fields = ["a", "b"]
@@ -46,8 +45,7 @@ class SampleVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView):
     # serializer versions
     versioning_serializer_classess = {
         1: SampleVersionedApiSerializerVer1,
-        2: SampleVersionedApiSerializerVer2
-
+        2: SampleVersionedApiSerializerVer2,
     }
     # default serializer class
     serializer_class = SampleVersionedApiSerializerVer2
@@ -62,7 +60,7 @@ class SampleDefaultDeprecatedVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView
     versioning_serializer_classess = {
         1: SampleVersionedApiSerializerVer1,
         2: SampleVersionedApiSerializerVer2,
-        3: SampleVersionedApiSerializerVer2
+        3: SampleVersionedApiSerializerVer2,
     }
     # default serializer class
     serializer_class = SampleVersionedApiSerializerVer2
@@ -78,8 +76,7 @@ class SampleCustomDeprecatedVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView)
     # serializer versions
     versioning_serializer_classess = {
         1: SampleVersionedApiSerializerVer1,
-        2: SampleVersionedApiSerializerVer2
-
+        2: SampleVersionedApiSerializerVer2,
     }
     # default serializer class
     serializer_class = SampleVersionedApiSerializerVer2
@@ -88,19 +85,31 @@ class SampleCustomDeprecatedVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView)
 
 urlpatterns = [
     re_path(r"^sample/(?P<pk>[\d]+)$", SampleVersionedApi.as_view(), name="sample_api"),
-    re_path(r"^sample/misconfigured/(?P<pk>[\d]+)$", SampleMisconfiguredApi.as_view(), name="sample_misconfigured_api"),
-    re_path(r"^sample/deprecated-custom/(?P<pk>[\d]+)$", SampleCustomDeprecatedVersionedApi.as_view(),
-            name="sample_custom_deprecated_api"),
-    re_path(r"^sample/deprecated-default/(?P<pk>[\d]+)$", SampleDefaultDeprecatedVersionedApi.as_view(),
-            name="sample_default_deprecated_api"),
+    re_path(
+        r"^sample/misconfigured/(?P<pk>[\d]+)$",
+        SampleMisconfiguredApi.as_view(),
+        name="sample_misconfigured_api",
+    ),
+    re_path(
+        r"^sample/deprecated-custom/(?P<pk>[\d]+)$",
+        SampleCustomDeprecatedVersionedApi.as_view(),
+        name="sample_custom_deprecated_api",
+    ),
+    re_path(
+        r"^sample/deprecated-default/(?P<pk>[\d]+)$",
+        SampleDefaultDeprecatedVersionedApi.as_view(),
+        name="sample_default_deprecated_api",
+    ),
 ]
 
 
-@override_settings(ROOT_URLCONF="tests.test_versioning",
-                   API_VERSION_DEPRECATION_OFFSET=1,
-                   API_VERSION_OBSOLETE_OFFSET=2,
-                   MIDDLEWARE=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware", ),
-                   MIDDLEWARE_CLASSES=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware", ))
+@override_settings(
+    ROOT_URLCONF="tests.test_versioning",
+    API_VERSION_DEPRECATION_OFFSET=1,
+    API_VERSION_OBSOLETE_OFFSET=2,
+    MIDDLEWARE=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware",),
+    MIDDLEWARE_CLASSES=settings.MIDDLEWARE + ("drf_tweaks.versioning.DeprecationMiddleware",),
+)
 class VersioningApiTestCase(APITestCase):
     def setUp(self):
         self.sample1 = SampleModel.objects.create(a="a", b="b")
@@ -112,15 +121,19 @@ class VersioningApiTestCase(APITestCase):
         self.assertEqual(response.data["a"], "a")
         self.assertNotIn("b", response.data)
 
-        response = self.client.get(reverse("sample_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=2")
+        response = self.client.get(
+            reverse("sample_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=2",
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["a"], "a")
         self.assertEqual(response.data["b"], "b")
         self.assertFalse(response.has_header("Warning"))
 
-        response = self.client.get(reverse("sample_misconfigured_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=1")
+        response = self.client.get(
+            reverse("sample_misconfigured_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=1",
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["a"], "a")
         self.assertEqual(response.data["b"], "b")
@@ -130,8 +143,10 @@ class VersioningApiTestCase(APITestCase):
         response = self.client.get(reverse("sample_default_deprecated_api", kwargs={"pk": self.sample1.pk}))
         self.assertEqual(response.status_code, 410)  # obsolete
 
-        response = self.client.get(reverse("sample_default_deprecated_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=2")
+        response = self.client.get(
+            reverse("sample_default_deprecated_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=2",
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["a"], "a")
         self.assertEqual(response.data["b"], "b")
@@ -141,17 +156,23 @@ class VersioningApiTestCase(APITestCase):
         response = self.client.get(reverse("sample_custom_deprecated_api", kwargs={"pk": self.sample1.pk}))
         self.assertEqual(response.status_code, 410)  # obsolete
 
-        response = self.client.get(reverse("sample_custom_deprecated_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=2")
+        response = self.client.get(
+            reverse("sample_custom_deprecated_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=2",
+        )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.data["a"], "a")
         self.assertEqual(response.data["b"], "b")
         self.assertTrue(response.has_header("Warning"))
 
     def test_incorrect_versions(self):
-        response = self.client.get(reverse("sample_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=teddybear")
+        response = self.client.get(
+            reverse("sample_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=teddybear",
+        )
         self.assertEqual(response.status_code, 400)
-        response = self.client.get(reverse("sample_api", kwargs={"pk": self.sample1.pk}),
-                                   HTTP_ACCEPT="application/json; version=5")
+        response = self.client.get(
+            reverse("sample_api", kwargs={"pk": self.sample1.pk}),
+            HTTP_ACCEPT="application/json; version=5",
+        )
         self.assertEqual(response.status_code, 400)

@@ -65,7 +65,5 @@ class TestQueryCounter(APITestCase):
             client.post(reverse("calls", kwargs={"n": 4}))
 
         # freeze counting
-        client.post(
-            reverse("calls-partially-frozen", kwargs={"counted": 2, "frozen": 3})
-        )
+        client.post(reverse("calls-partially-frozen", kwargs={"counted": 2, "frozen": 3}))
         self.assertEqual(test_utils.TestQueryCounter().get_counter(), 2)

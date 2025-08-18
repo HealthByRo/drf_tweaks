@@ -1,36 +1,40 @@
 # -*- coding: utf-8 -*-
-from distutils.version import LooseVersion
-from django import get_version
-from drf_tweaks.serializers import ContextPassing
+from django.db.models.fields import related_descriptors
 from rest_framework.serializers import ListSerializer, Serializer
 
-try:
-    from django.db.models.fields import related_descriptors
-except ImportError:
-    from django.db.models.fields import related as related_descriptors
+from drf_tweaks.serializers import ContextPassing
 
 
 def check_if_related_object(model_field):
-    if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        return any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
-                                                        related_descriptors.ReverseOneToOneDescriptor))
-    else:
-        return any(isinstance(model_field, x) for x in (related_descriptors.SingleRelatedObjectDescriptor,
-                                                        related_descriptors.ReverseSingleRelatedObjectDescriptor))
+    return any(
+        isinstance(model_field, x)
+        for x in (
+            related_descriptors.ForwardManyToOneDescriptor,
+            related_descriptors.ReverseOneToOneDescriptor,
+        )
+    )
 
 
 def check_if_prefetch_object(model_field):
-    if LooseVersion(get_version()) >= LooseVersion("1.9"):
-        return any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
-                                                        related_descriptors.ReverseManyToOneDescriptor))
-    else:
-        return any(isinstance(model_field, x) for x in (related_descriptors.ManyRelatedObjectsDescriptor,
-                                                        related_descriptors.ForeignRelatedObjectsDescriptor,
-                                                        related_descriptors.ReverseManyRelatedObjectsDescriptor))
+    return any(
+        isinstance(model_field, x)
+        for x in (
+            related_descriptors.ManyToManyDescriptor,
+            related_descriptors.ReverseManyToOneDescriptor,
+        )
+    )
 
 
-def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,
-                                   only_fields, include_fields, force_prefetch=False):
+def run_autooptimization_discovery(
+    serializer,
+    prefix,
+    select_related_set,
+    prefetch_related_set,
+    is_prefetch,
+    only_fields,
+    include_fields,
+    force_prefetch=False,
+):
     if not hasattr(serializer, "Meta") or not hasattr(serializer.Meta, "model"):
         return
     model_class = serializer.Meta.model
@@ -55,10 +59,15 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                 model_field = getattr(model_class, field.source)
                 if check_if_prefetch_object(model_field):
                     prefetch_related_set.add(prefix + field.source)
-                    run_autooptimization_discovery(field.child, prefix + field.source + "__", select_related_set,
-                                                   prefetch_related_set, True,
-                                                   filter_field_name(field_name, only_fields),
-                                                   filter_field_name(field_name, include_fields))
+                    run_autooptimization_discovery(
+                        field.child,
+                        prefix + field.source + "__",
+                        select_related_set,
+                        prefetch_related_set,
+                        True,
+                        filter_field_name(field_name, only_fields),
+                        filter_field_name(field_name, include_fields),
+                    )
         elif isinstance(field, Serializer):
             if "." not in field.source and hasattr(model_class, field.source):
                 model_field = getattr(model_class, field.source)
@@ -67,10 +76,15 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                         prefetch_related_set.add(prefix + field.source)
                     else:
                         select_related_set.add(prefix + field.source)
-                    run_autooptimization_discovery(field, prefix + field.source + "__", select_related_set,
-                                                   prefetch_related_set, is_prefetch,
-                                                   filter_field_name(field_name, only_fields),
-                                                   filter_field_name(field_name, include_fields))
+                    run_autooptimization_discovery(
+                        field,
+                        prefix + field.source + "__",
+                        select_related_set,
+                        prefetch_related_set,
+                        is_prefetch,
+                        filter_field_name(field_name, only_fields),
+                        filter_field_name(field_name, include_fields),
+                    )
         elif "." in field.source:
             field_name = field.source.split(".", 1)[0]
             if hasattr(model_class, field_name):
@@ -95,8 +109,14 @@ class AutoOptimizeMixin(object):
         select_related_set = set()
         prefetch_related_set = set()
         run_autooptimization_discovery(
-            serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields,
-            force_prefetch=getattr(self, "AUTOOPTIMIZE_FORCE_PREFETCH", False)
+            serializer,
+            "",
+            select_related_set,
+            prefetch_related_set,
+            False,
+            only_fields,
+            include_fields,
+            force_prefetch=getattr(self, "AUTOOPTIMIZE_FORCE_PREFETCH", False),
         )
 
         # ammending queryset

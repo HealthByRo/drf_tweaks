@@ -1,4 +1,5 @@
 from copy import copy
+
 from django.core.exceptions import FieldDoesNotExist
 from django.db import models
 from django_filters.rest_framework import DjangoFilterBackend
@@ -14,8 +15,11 @@ def autofilter(extra_ordering=None, extra_filter=None, exclude_fields=None):
         for serializer_field in serializer_class()._readable_fields:
             name = serializer_field.field_name
             try:
-                if name == "id" or getattr(model_cls._meta.get_field(name), "db_index", False) \
-                        or getattr(model_cls._meta.get_field(name), "unique", False):
+                if (
+                    name == "id"
+                    or getattr(model_cls._meta.get_field(name), "db_index", False)
+                    or getattr(model_cls._meta.get_field(name), "unique", False)
+                ):
                     if exclude_fields is None or name not in exclude_fields:
                         fields.add(name)
             except FieldDoesNotExist:
@@ -67,12 +71,15 @@ def autofilter(extra_ordering=None, extra_filter=None, exclude_fields=None):
                 pass
 
         if update_class:
+
             class new_filter_class(cls.filter_class):
                 class Meta(cls.filter_class.Meta):
                     fields = new_filters
+
             cls.filter_class = new_filter_class
         else:
             cls.filter_fields = new_filters
 
         return cls
+
     return wrapped
