@@ -180,7 +180,7 @@ BASE_INFO_WITH_PERMISSIONS = """Test
 
 <b>Permissions:</b>
 <i>DocumentedAllowAny</i>
- this is some doc for permission that should be added to doc
+this is some doc for permission that should be added to doc
 
 
 
