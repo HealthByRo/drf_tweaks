@@ -1,0 +1,27 @@
+line-length = 120
+target-version = "py311" # Lowest supported per setup.py
+
+[lint]
+extend-select = [
+    "ASYNC", # flake8-async
+    "B",     # flake8-bugbear
+    "FAST",  # FastAPI
+    "RUF",   # Ruff
+    "T10",   # flake8-debugger
+]
+
+extend-ignore = [
+    "RUF005", # Consider iterable unpacking instead of concatenation
+    "RUF012", # Mutable class attributes should be annotated with `typing.ClassVar`
+    "B904",   # Within an `except` clause, raise exceptions with `raise ... from err` or `raise ... from None` to distinguish them from errors in exception handling
+    "B007",  # Loop control variable `i` not used within loop body
+    "B028",  # No explicit `stacklevel` keyword argument found
+    "B026",  # Star-arg unpacking after a keyword argument is strongly discouraged
+]
+
+
+flake8-bugbear.extend-immutable-calls = ["fastapi.Depends", "fastapi.Query"]
+
+
+[lint.isort]
+known-third-party = []

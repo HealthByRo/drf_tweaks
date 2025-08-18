@@ -6,17 +6,35 @@ from django.db.models.fields import related_descriptors
 
 
 def check_if_related_object(model_field):
-    return any(isinstance(model_field, x) for x in (related_descriptors.ForwardManyToOneDescriptor,
-                                                    related_descriptors.ReverseOneToOneDescriptor))
+    return any(
+        isinstance(model_field, x)
+        for x in (
+            related_descriptors.ForwardManyToOneDescriptor,
+            related_descriptors.ReverseOneToOneDescriptor,
+        )
+    )
 
 
 def check_if_prefetch_object(model_field):
-    return any(isinstance(model_field, x) for x in (related_descriptors.ManyToManyDescriptor,
-                                                    related_descriptors.ReverseManyToOneDescriptor))
+    return any(
+        isinstance(model_field, x)
+        for x in (
+            related_descriptors.ManyToManyDescriptor,
+            related_descriptors.ReverseManyToOneDescriptor,
+        )
+    )
 
 
-def run_autooptimization_discovery(serializer, prefix, select_related_set, prefetch_related_set, is_prefetch,
-                                   only_fields, include_fields, force_prefetch=False):
+def run_autooptimization_discovery(
+    serializer,
+    prefix,
+    select_related_set,
+    prefetch_related_set,
+    is_prefetch,
+    only_fields,
+    include_fields,
+    force_prefetch=False,
+):
     if not hasattr(serializer, "Meta") or not hasattr(serializer.Meta, "model"):
         return
     model_class = serializer.Meta.model
@@ -41,10 +59,15 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                 model_field = getattr(model_class, field.source)
                 if check_if_prefetch_object(model_field):
                     prefetch_related_set.add(prefix + field.source)
-                    run_autooptimization_discovery(field.child, prefix + field.source + "__", select_related_set,
-                                                   prefetch_related_set, True,
-                                                   filter_field_name(field_name, only_fields),
-                                                   filter_field_name(field_name, include_fields))
+                    run_autooptimization_discovery(
+                        field.child,
+                        prefix + field.source + "__",
+                        select_related_set,
+                        prefetch_related_set,
+                        True,
+                        filter_field_name(field_name, only_fields),
+                        filter_field_name(field_name, include_fields),
+                    )
         elif isinstance(field, Serializer):
             if "." not in field.source and hasattr(model_class, field.source):
                 model_field = getattr(model_class, field.source)
@@ -53,10 +76,15 @@ def run_autooptimization_discovery(serializer, prefix, select_related_set, prefe
                         prefetch_related_set.add(prefix + field.source)
                     else:
                         select_related_set.add(prefix + field.source)
-                    run_autooptimization_discovery(field, prefix + field.source + "__", select_related_set,
-                                                   prefetch_related_set, is_prefetch,
-                                                   filter_field_name(field_name, only_fields),
-                                                   filter_field_name(field_name, include_fields))
+                    run_autooptimization_discovery(
+                        field,
+                        prefix + field.source + "__",
+                        select_related_set,
+                        prefetch_related_set,
+                        is_prefetch,
+                        filter_field_name(field_name, only_fields),
+                        filter_field_name(field_name, include_fields),
+                    )
         elif "." in field.source:
             field_name = field.source.split(".", 1)[0]
             if hasattr(model_class, field_name):
@@ -81,8 +109,14 @@ class AutoOptimizeMixin(object):
         select_related_set = set()
         prefetch_related_set = set()
         run_autooptimization_discovery(
-            serializer, "", select_related_set, prefetch_related_set, False, only_fields, include_fields,
-            force_prefetch=getattr(self, "AUTOOPTIMIZE_FORCE_PREFETCH", False)
+            serializer,
+            "",
+            select_related_set,
+            prefetch_related_set,
+            False,
+            only_fields,
+            include_fields,
+            force_prefetch=getattr(self, "AUTOOPTIMIZE_FORCE_PREFETCH", False),
         )
 
         # ammending queryset

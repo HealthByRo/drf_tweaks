@@ -24,38 +24,46 @@ class ObsoleteVersionException(APIException):
 
 class ApiVersionMixin(object):
     """
-        Use this as first in inheritance chain when creating own API classes
-        Returns serializer depending on versioning_serializer_classess and version
+    Use this as first in inheritance chain when creating own API classes
+    Returns serializer depending on versioning_serializer_classess and version
 
-        versioning_serializer_classess = {
-            1: "x",
-            2: "x",
-        }
+    versioning_serializer_classess = {
+        1: "x",
+        2: "x",
+    }
 
-        You can set custom deprecated/obsolete versions
-        CUSTOM_DEPRECATED_VERSION = X
-        CUSTOM_OBSOLETE_VERSION = Y
+    You can set custom deprecated/obsolete versions
+    CUSTOM_DEPRECATED_VERSION = X
+    CUSTOM_OBSOLETE_VERSION = Y
 
-        It can be also configured on the settings level as a fixed version
-        API_DEPRECATED_VERSION = X
-        API_OBSOLETE_VERSION = Y
+    It can be also configured on the settings level as a fixed version
+    API_DEPRECATED_VERSION = X
+    API_OBSOLETE_VERSION = Y
 
-        or as an offset - for example:
-        API_VERSION_DEPRECATION_OFFSET = 6
-        API_VERSION_OBSOLETE_OFFSET = 10
+    or as an offset - for example:
+    API_VERSION_DEPRECATION_OFFSET = 6
+    API_VERSION_OBSOLETE_OFFSET = 10
 
-        Offset is calculated using the highest version number:
-        deprecated = max(self.versioning_serializer_classess.keys() - API_VERSION_DEPRECATION_OFFSET)
-        obsolete = max(self.versioning_serializer_classess.keys() - API_VERSION_OBSOLETE_OFFSET)
+    Offset is calculated using the highest version number:
+    deprecated = max(self.versioning_serializer_classess.keys() - API_VERSION_DEPRECATION_OFFSET)
+    obsolete = max(self.versioning_serializer_classess.keys() - API_VERSION_OBSOLETE_OFFSET)
 
-        If neither is set, deprecation/obsolete will not work. Only the first applicable setting is taken into account
-        (in the order as presented above).
+    If neither is set, deprecation/obsolete will not work. Only the first applicable setting is taken into account
+    (in the order as presented above).
     """
 
     @classmethod
     def get_deprecated_and_obsolete_versions(cls):
-        deprecated = getattr(settings, "API_DEPRECATED_VERSION", getattr(cls, "CUSTOM_DEPRECATED_VERSION", None))
-        obsolete = getattr(settings, "API_OBSOLETE_VERSION", getattr(cls, "CUSTOM_OBSOLETE_VERSION", None))
+        deprecated = getattr(
+            settings,
+            "API_DEPRECATED_VERSION",
+            getattr(cls, "CUSTOM_DEPRECATED_VERSION", None),
+        )
+        obsolete = getattr(
+            settings,
+            "API_OBSOLETE_VERSION",
+            getattr(cls, "CUSTOM_OBSOLETE_VERSION", None),
+        )
 
         if deprecated is None or obsolete is None:
             API_VERSION_DEPRECATION_OFFSET = getattr(settings, "API_VERSION_DEPRECATION_OFFSET", None)
@@ -101,8 +109,8 @@ class ApiVersionMixin(object):
 
 class DeprecationMiddleware(MiddlewareMixin):
     def process_response(self, request, response):
-        """ Adds deprecation warning - if applicable """
+        """Adds deprecation warning - if applicable"""
         if getattr(request, "deprecated", False):
-            response["Warning"] = "299 - \"This Api Version is Deprecated\""
+            response["Warning"] = '299 - "This Api Version is Deprecated"'
 
         return response

@@ -28,9 +28,7 @@ def replacement_as_sql(self, *args, **kwargs):
 def patch_sqlcompiler(whitelisted_table_sets):
     SQLCompiler.query_lock_limiter_old_as_sql = SQLCompiler.as_sql
     SQLCompiler.as_sql = replacement_as_sql
-    SQLCompiler.query_lock_limiter_whitelist = [
-        sorted(tables) for tables in whitelisted_table_sets
-    ]
+    SQLCompiler.query_lock_limiter_whitelist = [sorted(tables) for tables in whitelisted_table_sets]
 
 
 def unpatch_sqlcompiler():
@@ -39,19 +37,17 @@ def unpatch_sqlcompiler():
 
 
 @contextmanager
-def query_lock_limiter(enable=False, whitelisted_table_sets=[]):
-    enabled = enable or getattr(
-        settings, "TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED", False
-    )
+def query_lock_limiter(enable=False, whitelisted_table_sets=None):
+    if whitelisted_table_sets is None:
+        whitelisted_table_sets = []
+    enabled = enable or getattr(settings, "TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED", False)
     if not enabled:
         yield
         return
 
     was_already_patched = hasattr(SQLCompiler, "query_lock_limiter_old_as_sql")
     if not was_already_patched:
-        whitelist = whitelisted_table_sets or getattr(
-            settings, "TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS", []
-        )
+        whitelist = whitelisted_table_sets or getattr(settings, "TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS", [])
         patch_sqlcompiler(whitelist)
     try:
         yield

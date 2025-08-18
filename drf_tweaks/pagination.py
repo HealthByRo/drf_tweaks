@@ -3,14 +3,19 @@ from django.utils.translation import gettext_lazy as _
 
 from rest_framework import status
 from rest_framework.exceptions import APIException
-from rest_framework.pagination import (LimitOffsetPagination, NotFound, PageNumberPagination, remove_query_param,
-                                       replace_query_param)
+from rest_framework.pagination import (
+    LimitOffsetPagination,
+    NotFound,
+    PageNumberPagination,
+    remove_query_param,
+    replace_query_param,
+)
 from rest_framework.response import Response
 
 
 class IncorrectLimitOffsetError(APIException):
     status_code = status.HTTP_400_BAD_REQUEST
-    default_detail = _('Incorrect offset or limit.')
+    default_detail = _("Incorrect offset or limit.")
 
 
 class NoCountsLimitOffsetPagination(LimitOffsetPagination):
@@ -32,6 +37,7 @@ class NoCountsLimitOffsetPagination(LimitOffsetPagination):
         - skip is a relatively slow operation, so this paginator is not as fast as cursor paginator when you use
           large offsets
     """
+
     def get_html_context(self):
         raise NotImplementedError
 
@@ -49,15 +55,19 @@ class NoCountsLimitOffsetPagination(LimitOffsetPagination):
             raise IncorrectLimitOffsetError
 
         self.request = request
-        self.results = list(queryset[self.offset:self.offset + self.effective_limit])
+        self.results = list(queryset[self.offset : self.offset + self.effective_limit])
         return self.results
 
     def get_paginated_response(self, data):
-        return Response(dict([
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('results', data)
-        ]))
+        return Response(
+            dict(
+                [
+                    ("next", self.get_next_link()),
+                    ("previous", self.get_previous_link()),
+                    ("results", data),
+                ]
+            )
+        )
 
     def get_offset(self, request):
         try:
@@ -90,6 +100,7 @@ class NoCountsPageNumberPagination(PageNumberPagination):
         - skip is a relatively slow operation, so this paginator is not as fast as cursor paginator when you use
           large page numbers
     """
+
     def get_page_number(self, request):
         try:
             return int(request.query_params[self.page_query_param])
@@ -110,15 +121,19 @@ class NoCountsPageNumberPagination(PageNumberPagination):
             raise NotFound(self.invalid_page_message)
 
         self.request = request
-        self.results = list(queryset[(self.page_number - 1) * self.page_size:self.page_number * self.page_size])
+        self.results = list(queryset[(self.page_number - 1) * self.page_size : self.page_number * self.page_size])
         return self.results
 
     def get_paginated_response(self, data):
-        return Response(dict([
-            ('next', self.get_next_link()),
-            ('previous', self.get_previous_link()),
-            ('results', data)
-        ]))
+        return Response(
+            dict(
+                [
+                    ("next", self.get_next_link()),
+                    ("previous", self.get_previous_link()),
+                    ("results", data),
+                ]
+            )
+        )
 
     def get_next_link(self):
         if len(self.results) < self.page_size:

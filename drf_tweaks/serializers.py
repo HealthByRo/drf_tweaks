@@ -3,8 +3,13 @@ from __future__ import unicode_literals
 
 from copy import copy
 from rest_framework import serializers
-from rest_framework.fields import (api_settings, DjangoValidationError, empty, SkipField,
-                                   ValidationError)
+from rest_framework.fields import (
+    api_settings,
+    DjangoValidationError,
+    empty,
+    SkipField,
+    ValidationError,
+)
 from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
 
@@ -207,12 +212,8 @@ class SerializerCustomizationMixin(object):
     # one-step validation
     def to_internal_value(self, data):
         if not isinstance(data, dict):
-            message = self.error_messages["invalid"].format(
-                datatype=type(data).__name__
-            )
-            raise ValidationError({
-                api_settings.NON_FIELD_ERRORS_KEY: [message]
-            })
+            message = self.error_messages["invalid"].format(datatype=type(data).__name__)
+            raise ValidationError({api_settings.NON_FIELD_ERRORS_KEY: [message]})
 
         ret = dict()
         errors = dict()

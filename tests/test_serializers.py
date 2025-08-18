@@ -59,12 +59,8 @@ class SampleSerializerForOneStepTest(Serializer):
 class SampleSerializerWithCustomErrors(Serializer):
     required_error = "{fieldname} is required."
     blank_error = "{fieldname} cannot be blank."
-    custom_required_errors = {
-        "c": "{fieldname} something something."
-    }
-    custom_blank_errors = {
-        "d": "{fieldname} something blank."
-    }
+    custom_required_errors = {"c": "{fieldname} something something."}
+    custom_blank_errors = {"d": "{fieldname} something blank."}
     a = serializers.CharField(required=True)
     b = serializers.CharField(required=True)
     c = serializers.CharField(required=True)
@@ -99,11 +95,14 @@ class SerializersTestCase(APITestCase):
         # get errors from all three steps
         serializer = SampleSerializerForOneStepTest(data={"b": "y", "c": "x"})
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors, {
-            "a": ["This field is required."],
-            "b": ["wrong value"],
-            "c": ["wrong again"]
-        })
+        self.assertEqual(
+            serializer.errors,
+            {
+                "a": ["This field is required."],
+                "b": ["wrong value"],
+                "c": ["wrong again"],
+            },
+        )
 
         # check for proper data
         serializer = SampleSerializerForOneStepTest(data={"a": "a", "b": "x", "c": "x"})
@@ -120,12 +119,15 @@ class SerializersTestCase(APITestCase):
     def test_overriding_fields_error_messages(self):
         serializer = SampleSerializerWithCustomErrors(data={"b": "", "d": ""})
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(serializer.errors, {
-            "a": ["A is required."],
-            "b": ["B cannot be blank."],
-            "c": ["C something something."],
-            "d": ["D something blank."]
-        })
+        self.assertEqual(
+            serializer.errors,
+            {
+                "a": ["A is required."],
+                "b": ["B cannot be blank."],
+                "c": ["C something something."],
+                "d": ["D something blank."],
+            },
+        )
 
     def test_control_over_serialization_fields(self):
         # w/o control
@@ -133,7 +135,7 @@ class SerializersTestCase(APITestCase):
         self.assertEqual(set(serializer.data.keys()), {"a", "b"})
 
         # pass through context
-        serializer = SampleModelSerializer(instance=self.sample1, context={"fields": ("a", )})
+        serializer = SampleModelSerializer(instance=self.sample1, context={"fields": ("a",)})
         self.assertEqual(set(serializer.data.keys()), {"a"})
 
         # pass through request

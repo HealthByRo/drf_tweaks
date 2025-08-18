@@ -10,7 +10,13 @@ from rest_framework.permissions import AllowAny
 from rest_framework.test import APITestCase
 from rest_framework.versioning import AcceptHeaderVersioning
 
-from drf_tweaks.autodoc import autodoc, BaseInfoAutodoc, OnDemandFieldsAutodoc, PaginationAutodoc, PermissionsAutodoc
+from drf_tweaks.autodoc import (
+    autodoc,
+    BaseInfoAutodoc,
+    OnDemandFieldsAutodoc,
+    PaginationAutodoc,
+    PermissionsAutodoc,
+)
 from drf_tweaks.autofilter import autofilter
 from drf_tweaks.pagination import NoCountsLimitOffsetPagination
 from drf_tweaks.serializers import ModelSerializer
@@ -26,7 +32,15 @@ class SampleVersionedApiSerializerVer1(serializers.Serializer):
 class SampleModelForAutofilterSerializer(serializers.ModelSerializer):
     class Meta:
         model = SampleModelForAutofilter
-        fields = ["id", "fk", "non_indexed_fk", "indexed_int", "non_indexed_int", "indexed_char", "non_indexed_char"]
+        fields = [
+            "id",
+            "fk",
+            "non_indexed_fk",
+            "indexed_int",
+            "non_indexed_int",
+            "indexed_char",
+            "non_indexed_char",
+        ]
 
 
 class SampleOnDemandFieldsSerializer(ModelSerializer):
@@ -46,7 +60,8 @@ class NoDocAllowAny(AllowAny):
 
 
 class DocumentedAllowAny(AllowAny):
-    """ this is some doc for permission that should be added to doc """
+    """this is some doc for permission that should be added to doc"""
+
     pass
 
 
@@ -65,31 +80,30 @@ class SampleVersionedApi(ApiVersionMixin, RetrieveUpdateAPIView):
     # serializer versions
     versioning_serializer_classess = {
         1: SampleVersionedApiSerializerVer1,
-        2: SampleVersionedApiSerializerVer1
-
+        2: SampleVersionedApiSerializerVer1,
     }
     # default serializer class
     serializer_class = SampleVersionedApiSerializerVer1
 
 
-@autodoc("Test", classess=(BaseInfoAutodoc, ))
+@autodoc("Test", classess=(BaseInfoAutodoc,))
 class SampleVersionedApiT1(SampleVersionedApi):
     permission_classes = (NoDocAllowAny,)
 
     def put(self, *args, **kwargs):
-        """ some description
+        """some description
         ---
         some yaml"""
         pass
 
     def get(self, *args, **kwargs):
-        """ some description
+        """some description
         ---
         some yaml"""
         pass
 
     def patch(self, *args, **kwargs):
-        """ some description
+        """some description
         ---
         some yaml"""
         pass
@@ -110,7 +124,7 @@ class SampleVersionedApiT2(SampleVersionedApi):
     CUSTOM_OBSOLETE_VERSION = 1
 
 
-@autodoc("Test", classess=(BaseInfoAutodoc, ), add_classess=(PaginationAutodoc, ))
+@autodoc("Test", classess=(BaseInfoAutodoc,), add_classess=(PaginationAutodoc,))
 class SampleVersionedApiT3(SampleVersionedApi):
     pass
 
@@ -293,7 +307,10 @@ class AutodocTestCase(APITestCase):
     def test_base_info_with_custom_data_and_overriding_classes(self):
         self.assertEqual(SampleVersionedApiT1.put.__doc__, BASE_INFO_WITH_DOCSTRING_PUT)
         self.assertEqual(SampleVersionedApiT1.get.__doc__, BASE_INFO_WITH_DOCSTRING_AND_CUSTOM_GET)
-        self.assertEqual(SampleVersionedApiT1.patch.__doc__, BASE_INFO_WITH_DOCSTRING_AND_CUSTOM_PATCH)
+        self.assertEqual(
+            SampleVersionedApiT1.patch.__doc__,
+            BASE_INFO_WITH_DOCSTRING_AND_CUSTOM_PATCH,
+        )
 
     def test_versioning_autodoc_and_skipping_classess(self):
         self.assertEqual(SampleVersionedApiT2.get.__doc__, VERSIONING_GET)
