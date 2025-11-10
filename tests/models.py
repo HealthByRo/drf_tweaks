@@ -38,12 +38,20 @@ class ThirdLevelModelForNestedFilteringTest(models.Model):
 
 class SecondLevelModelForContextPassingTest(models.Model):
     name = models.CharField(max_length=255)
-    third = models.ForeignKey(ThirdLevelModelForNestedFilteringTest, related_name="second", null=True,
-                              on_delete=models.CASCADE)
+    third = models.ForeignKey(
+        ThirdLevelModelForNestedFilteringTest,
+        related_name="second",
+        null=True,
+        on_delete=models.CASCADE,
+    )
 
 
 class TopLevelModelForContextPassingTest(models.Model):
-    second = models.ForeignKey(SecondLevelModelForContextPassingTest, related_name="top", on_delete=models.CASCADE)
+    second = models.ForeignKey(
+        SecondLevelModelForContextPassingTest,
+        related_name="top",
+        on_delete=models.CASCADE,
+    )
     name = models.CharField(max_length=255)
 
 

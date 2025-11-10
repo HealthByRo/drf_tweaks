@@ -5,9 +5,9 @@ from django.test import override_settings
 from django.urls import re_path
 
 from drf_tweaks.test_utils import (
-    query_lock_limiter,
     DatabaseAccessLintingApiTestCase,
     WouldSelectMultipleTablesForUpdate,
+    query_lock_limiter,
 )
 from tests.models import SampleModel, SampleModelWithFK
 
@@ -79,9 +79,7 @@ class TestLockLimiter(DatabaseAccessLintingApiTestCase):
     @override_settings(
         ROOT_URLCONF="tests.test_lock_limiter",
         TEST_SELECT_FOR_UPDATE_LIMITER_ENABLED=True,
-        TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS=[
-            ["tests_samplemodel", "tests_samplemodelwithfk"]
-        ],
+        TEST_SELECT_FOR_UPDATE_WHITELISTED_TABLE_SETS=[["tests_samplemodel", "tests_samplemodelwithfk"]],
     )
     def test_whitelist(self):
         for method in ("get", "post", "put", "patch"):
