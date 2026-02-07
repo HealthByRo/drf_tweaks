@@ -1,6 +1,17 @@
 # Change Log
 All notable changes to this project will be documented in this file.
 
+## [0.10.0] - 2026-02-07
+### Changed
+- Support Python 3.11, 3.12, 3.13, 3.14 (drop 3.8, 3.9)
+- Support Django 4.2, 5.2 (drop 2.x, 3.x)
+- Replace django-rest-swagger with drf-spectacular
+- Replace flake8/pep8/isort with ruff for linting
+- Update all dependencies to latest versions
+### Removed
+- six dependency (unused Python 2 compat layer)
+- django-rest-swagger dependency (deprecated)
+
 ## [0.9.7] - 2021-09-29
 ### Changed
 - Fix issue with django.core.exceptions.FieldError: Invalid field name(s) given in select_related: error.

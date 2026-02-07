@@ -64,7 +64,7 @@ class SampleApiV3(ListAPIView):
     serializer_class = SampleModelForAutofilterSerializerVer1
     queryset = SampleModelForAutofilter.objects.all()
     ordering_fields = ("non_indexed_char", )
-    filter_fields = ("non_indexed_email", )
+    filterset_fields = ("non_indexed_email", )
 
 
 @autofilter(extra_filter=("non_indexed_int", ))
@@ -72,7 +72,7 @@ class SampleApiV4(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = SampleModelForAutofilterSerializerVer1
     queryset = SampleModelForAutofilter.objects.all()
-    filter_class = SampleFilterClass
+    filterset_class = SampleFilterClass
 
 
 @autofilter()
@@ -80,7 +80,7 @@ class SampleApiV5(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = SampleModelForAutofilterSerializerVer1
     queryset = SampleModelForAutofilter.objects.all()
-    filter_class = SampleFilterClass
+    filterset_class = SampleFilterClass
 
 
 @autofilter()
@@ -88,7 +88,7 @@ class SampleApiV6(ListAPIView):
     permission_classes = (AllowAny,)
     serializer_class = SampleModelForAutofilterSerializerVer1
     queryset = SampleModelForAutofilter.objects.all()
-    filter_class = SampleFilterClassV2
+    filterset_class = SampleFilterClassV2
 
 
 urlpatterns = [
@@ -154,40 +154,40 @@ class TestAutoFilter(TestCase):
                                                             "non_indexed_char", "nullable_field", "unique_text"})
 
     def test_adding_filter_fields(self):
-        self.assertEqual(set(SampleApiV1.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
+        self.assertEqual(set(SampleApiV1.filterset_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                  "indexed_text", "indexed_url", "indexed_email",
                                                                  "nullable_field", "unique_text"})
-        self.assertEqual(set(SampleApiV2.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char"})
+        self.assertEqual(set(SampleApiV2.filterset_fields.keys()), {"id", "fk", "indexed_int", "indexed_char"})
 
         for key in ("id", "fk", "indexed_int"):
-            self.assertEqual(SampleApiV1.filter_fields[key], ["exact", "gt", "gte", "lt", "lte", "in", "isnull"])
+            self.assertEqual(SampleApiV1.filterset_fields[key], ["exact", "gt", "gte", "lt", "lte", "in", "isnull"])
         for key in ("indexed_char", "indexed_text", "indexed_url", "indexed_email", "unique_text"):
             self.assertEqual(
-                SampleApiV1.filter_fields[key],
+                SampleApiV1.filterset_fields[key],
                 ["exact", "gt", "gte", "lt", "lte", "in", "isnull", "icontains", "istartswith"])
 
     def test_adding_filter_fields_with_extra_and_explicit(self):
-        self.assertEqual(set(SampleApiV3.filter_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
+        self.assertEqual(set(SampleApiV3.filterset_fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                  "indexed_text", "indexed_url", "indexed_email",
                                                                  "non_indexed_int", "non_indexed_email",
                                                                  "nullable_field", "unique_text"})
 
     def test_adding_filter_fields_with_extra_andfilter_class(self):
-        self.assertNotEqual(SampleApiV4.filter_class, SampleApiV5.filter_class)
-        self.assertNotEqual(SampleApiV4.filter_class.Meta, SampleApiV5.filter_class.Meta)
+        self.assertNotEqual(SampleApiV4.filterset_class, SampleApiV5.filterset_class)
+        self.assertNotEqual(SampleApiV4.filterset_class.Meta, SampleApiV5.filterset_class.Meta)
 
-        self.assertEqual(set(SampleApiV4.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
+        self.assertEqual(set(SampleApiV4.filterset_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
                                                                             "indexed_email", "non_indexed_int",
                                                                             "non_indexed_email", "nullable_field",
                                                                             "unique_text"})
 
-        self.assertEqual(set(SampleApiV5.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
+        self.assertEqual(set(SampleApiV5.filterset_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
                                                                             "indexed_email", "non_indexed_email",
                                                                             "nullable_field", "unique_text"})
 
-        self.assertEqual(set(SampleApiV6.filter_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
+        self.assertEqual(set(SampleApiV6.filterset_class.Meta.fields.keys()), {"id", "fk", "indexed_int", "indexed_char",
                                                                             "indexed_text", "indexed_url",
                                                                             "indexed_email", "non_indexed_email",
                                                                             "nullable_field", "unique_text"})
@@ -199,7 +199,7 @@ class TestAutoFilter(TestCase):
             serializer_class = SampleModelForAutofilterSerializerVer1
             queryset = SampleModelForAutofilter.objects.all()
 
-        self.assertEqual(set(SampleApiV7.filter_fields.keys()), {"id", "fk", "indexed_text", "indexed_url",
+        self.assertEqual(set(SampleApiV7.filterset_fields.keys()), {"id", "fk", "indexed_text", "indexed_url",
                                                                  "indexed_email", "nullable_field", "unique_text"})
 
     def test_integration_filtering(self):

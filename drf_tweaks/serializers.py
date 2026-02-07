@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
+from collections import OrderedDict
 from copy import copy
+
 from rest_framework import serializers
-from rest_framework.fields import (api_settings, DjangoValidationError, empty, OrderedDict, set_value, SkipField,
-                                   ValidationError)
+from rest_framework.fields import api_settings, DjangoValidationError, empty, SkipField, ValidationError
 from rest_framework.serializers import as_serializer_error, PKOnlyObject
 
 
@@ -232,7 +231,7 @@ class SerializerCustomizationMixin(object):
             except SkipField:
                 pass
             else:
-                set_value(ret, field.source_attrs, validated_value)
+                self.set_value(ret, field.source_attrs, validated_value)
 
         return ret, errors
 
