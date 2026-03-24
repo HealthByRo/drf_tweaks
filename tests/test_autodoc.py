@@ -46,7 +46,7 @@ class NoDocAllowAny(AllowAny):
 
 
 class DocumentedAllowAny(AllowAny):
-    """ this is some doc for permission that should be added to doc """
+    """this is some doc for permission that should be added to doc """
     pass
 
 
@@ -138,7 +138,7 @@ class SampleAutofilterApiV2(ListAPIView):
     permission_classes = (NoDocAllowAny,)
     serializer_class = SampleModelForAutofilterSerializer
     filter_backends = (filters.OrderingFilter,)
-    filter_class = SampleFilterClass
+    filterset_class = SampleFilterClass
     pagination_class = None
 
 
@@ -147,7 +147,7 @@ class SampleAutofilterApiV3(ListAPIView):
     queryset = SampleModelForAutofilter.objects.all()
     permission_classes = (NoDocAllowAny,)
     serializer_class = SampleModelForAutofilterSerializer
-    filter_fields = ("id", "fk")
+    filterset_fields = ("id", "fk")
     ordering_fields = ("id", "fk")
     pagination_class = None
 
@@ -166,7 +166,7 @@ BASE_INFO_WITH_PERMISSIONS = """Test
 
 <b>Permissions:</b>
 <i>DocumentedAllowAny</i>
- this is some doc for permission that should be added to doc
+this is some doc for permission that should be added to doc
 
 
 

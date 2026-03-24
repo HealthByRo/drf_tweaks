@@ -43,12 +43,12 @@ def autofilter(extra_ordering=None, extra_filter=None, exclude_fields=None):
 
         update_class = False
         explicit_filters = None
-        if hasattr(cls, "filter_class"):
+        if hasattr(cls, "filterset_class"):
             update_class = True
-            if hasattr(cls.filter_class, "Meta"):
-                explicit_filters = getattr(cls.filter_class.Meta, "fields", None)
+            if hasattr(cls.filterset_class, "Meta"):
+                explicit_filters = getattr(cls.filterset_class.Meta, "fields", None)
         else:
-            explicit_filters = getattr(cls, "filter_fields", None)
+            explicit_filters = getattr(cls, "filterset_fields", None)
 
         if explicit_filters:
             if isinstance(explicit_filters, dict):
@@ -67,12 +67,12 @@ def autofilter(extra_ordering=None, extra_filter=None, exclude_fields=None):
                 pass
 
         if update_class:
-            class new_filter_class(cls.filter_class):
-                class Meta(cls.filter_class.Meta):
+            class new_filterset_class(cls.filterset_class):
+                class Meta(cls.filterset_class.Meta):
                     fields = new_filters
-            cls.filter_class = new_filter_class
+            cls.filterset_class = new_filterset_class
         else:
-            cls.filter_fields = new_filters
+            cls.filterset_fields = new_filters
 
         return cls
     return wrapped

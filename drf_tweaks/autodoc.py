@@ -21,8 +21,6 @@ from django.conf import settings
 from functools import wraps
 from rest_framework.settings import import_from_string
 
-import six
-
 
 class AutodocBase(object):
     """ base class for autodoc """
@@ -104,7 +102,7 @@ class PermissionsAutodoc(AutodocBase):
             for permission_cls in documented_cls.permission_classes:
                 text += "<i>%s</i>\n" % permission_cls.__name__
                 if permission_cls.__doc__:
-                    text += "%s\n" % permission_cls.__doc__
+                    text += "%s\n" % permission_cls.__doc__.strip()
         return text
 
 
@@ -152,10 +150,10 @@ class OrderingAndFilteringAutodoc(AutodocBase):
             text += "<b>Sorting:</b>\n\n\tusage: ?ordering=FIELD_NAME,-OTHER_FIELD_NAME\n\n\tavailable fields: "
             text += ", ".join(sorted(ordering_fields))
 
-        filter_fields = getattr(documented_cls, "filter_fields", None)
-        filter_class = getattr(documented_cls, "filter_class", None)
-        if filter_class:
-            filter_fields = filter_class.Meta.fields
+        filter_fields = getattr(documented_cls, "filterset_fields", None)
+        filterset_class = getattr(documented_cls, "filterset_class", None)
+        if filterset_class:
+            filter_fields = filterset_class.Meta.fields
         if filter_fields:
             if ordering_fields:
                 text += "\n\n\n\n"
@@ -262,8 +260,8 @@ def autodoc(base_doc="", classess=DEFAULT_CLASSESS, add_classess=None, skip_clas
             for method_name in autodoc_class.applies_to:
                 method = getattr(cls, method_name, None)
                 if method:
-                    six.get_unbound_function(method).__doc__ = \
-                        autodoc_class.update_docstring(cls, base_doc, six.get_unbound_function(method).__doc__,
+                    method.__doc__ = \
+                        autodoc_class.update_docstring(cls, base_doc, method.__doc__,
                                                        method_name)
         return cls
     return wrapped
