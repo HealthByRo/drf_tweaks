@@ -1,24 +1,21 @@
 # Product Security tooling
-# Runs Dependency Check Scanning
+# Runs Manifest SBOM generation
 ---
 name: Product Security Tooling
 
 "on":
-  pull_request:
+  push:
+    branches:
+      - master
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
-  dependency-check:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      - name: Dependency Check
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: critical
-          license-check: false
-          comment-summary-in-pr: on-failure
+  sbom_generator:
+    uses: HealthByRo/ro-github-actions/.github/workflows/manifest_sbom.yml@main
+    with:
+      languages: '["Python"]'
+    secrets:
+      ssh_key: ${{ secrets.SSH_RO_CI_DEPLOY }}
+      manifest_key: ${{ secrets.MANIFEST_SBOM }}
